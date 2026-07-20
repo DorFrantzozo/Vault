@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, X, CalendarOff, Pencil, CalendarPlus } from 'lucide-react';
+import { Plus, Trash2, CalendarOff, Pencil, CalendarPlus } from 'lucide-react';
 import {
   useGetEventsQuery,
   useCreateEventMutation,
@@ -11,16 +11,37 @@ import { IServiceEvent } from '../types/api.js';
 import { downloadAppleIcsFile, getGoogleCalendarUrl } from '../utils/calendarExport.js';
 import { useModal } from '../components/common/ModalContext.js';
 
+import { Card } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import { Input } from '../components/ui/input';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '../components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog';
+
 export default function Events() {
   const { confirm } = useModal();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const [clientId, setClientId] = useState('');
   const [type, setType] = useState<IServiceEvent['type']>('DJ Gig');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<IServiceEvent['status']>('Scheduled');
+  const [amount, setAmount] = useState<string>('');
 
   const { data: eventsData, isLoading } = useGetEventsQuery();
   const { data: clientsData } = useGetClientsQuery();
@@ -45,6 +66,7 @@ export default function Events() {
     setDate(new Date(ev.date).toISOString().split('T')[0]);
     setDescription(ev.description || '');
     setStatus(ev.status);
+    setAmount(ev.amount ? ev.amount.toString() : '0');
     setIsModalOpen(true);
   };
 
@@ -61,7 +83,10 @@ export default function Events() {
           date: new Date(date).toISOString(),
           description: description || undefined,
           status,
+          amount: Number(amount) || 0,
         }).unwrap();
+        setIsModalOpen(false);
+        resetForm();
       } else {
         const res = await createEvent({
           client: clientId,
@@ -69,9 +94,13 @@ export default function Events() {
           date: new Date(date).toISOString(),
           description: description || undefined,
           status,
+          amount: Number(amount) || 0,
         }).unwrap();
 
-        // Prompt user to add to Apple Calendar immediately upon creation
+        // Close the form modal FIRST, then prompt for calendar export
+        setIsModalOpen(false);
+        resetForm();
+
         const created = res.data?.event;
         if (created) {
           const exportToCal = await confirm({
@@ -86,10 +115,9 @@ export default function Events() {
           }
         }
       }
-      setIsModalOpen(false);
-      resetForm();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to save event', err);
+      setModalError(err?.data?.message || 'שגיאה בשמירת האירוע');
     }
   };
 
@@ -116,6 +144,7 @@ export default function Events() {
     setDate(new Date().toISOString().split('T')[0]);
     setDescription('');
     setStatus('Scheduled');
+    setAmount('');
     setEditingEventId(null);
   };
 
@@ -148,148 +177,167 @@ export default function Events() {
   };
 
   return (
-    <div className="space-y-6 text-zinc-100 pb-6">
+    <div className="space-y-8 text-ink-black pb-8 font-sans">
       {/* Header Row */}
-      <div className="flex items-center justify-between pb-3 border-b border-zinc-800/80">
+      <div className="flex items-center justify-between pb-4 border-b border-ink-black/10">
         <div className="text-right">
-          <h1 className="text-xl font-bold tracking-tight text-white">יומן אירועים ותפעול</h1>
-          <p className="text-xs text-zinc-400 mt-0.5">תזמון, עריכה, ניהול וסנכרון אירועים ל-Apple Calendar ו-Google</p>
+          <h1 className="text-3xl font-medium tracking-tight text-ink-black font-heading flex items-center gap-2">
+            <span>יומן אירועים ותפעול</span>
+          </h1>
+          <p className="text-xs text-slate-gray mt-1 font-sans">תזמון, עריכה, ניהול וסנכרון אירועים ל-Apple Calendar ו-Google</p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="flex items-center space-x-1.5 space-x-reverse bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold px-4 py-2 rounded-lg shadow-md shadow-indigo-500/20 transition-all text-xs border border-indigo-400/20 active:scale-95"
-        >
-          <Plus className="w-4 h-4 stroke-[2.5]" />
+        <Button variant="default" onClick={openCreateModal}>
+          <Plus className="w-4 h-4 stroke-[2.5] ml-1.5" />
           <span>תזמן אירוע</span>
-        </button>
+        </Button>
       </div>
 
-      {/* Table / List Section */}
-      <div className="bg-[#12131c] border border-zinc-800/90 rounded-xl shadow-md shadow-black/40 overflow-hidden">
+      {/* Table / Empty State Container */}
+      <Card className="overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
         {isLoading ? (
-          <div className="p-12 text-center text-zinc-400 text-xs">טוען אירועים...</div>
+          <div className="p-16 text-center text-slate-gray text-xs font-medium">טוען אירועים...</div>
         ) : events.length === 0 ? (
-          <div className="border border-dashed border-zinc-800/80 rounded-xl p-10 bg-zinc-900/30 flex flex-col items-center justify-center space-y-2 text-center my-4">
-            <CalendarOff className="w-8 h-8 text-zinc-600 stroke-[1.5]" />
-            <p className="text-xs text-zinc-300 font-medium">טרם נרשמו אירועים ביומן</p>
-            <span className="text-[10px] text-zinc-500">לחץ על "תזמן אירוע" ליצירת אירוע חדש</span>
+          <div className="p-12 sm:p-16 flex flex-col items-center justify-center space-y-3 text-center">
+            <div className="w-12 h-12 rounded-full bg-canvas-cream flex items-center justify-center text-slate-gray mb-1">
+              <CalendarOff className="w-6 h-6 stroke-[1.5]" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-ink-black font-bold font-heading">טרם נרשמו אירועים ביומן</p>
+              <p className="text-xs text-slate-gray">לחץ על "תזמן אירוע" ליצירת אירוע חדש ביומן</p>
+            </div>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-right text-xs">
-              <thead className="bg-zinc-950/80 text-zinc-400 text-[11px] font-semibold uppercase border-b border-zinc-800/80">
-                <tr>
-                  <th className="px-5 py-3">תאריך</th>
-                  <th className="px-5 py-3">סוג אירוע</th>
-                  <th className="px-5 py-3">לקוח</th>
-                  <th className="px-5 py-3">סטטוס</th>
-                  <th className="px-5 py-3">תיאור</th>
-                  <th className="px-5 py-3 text-left">ייצוא ליומן / פעולות</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-800/60 text-zinc-200">
-                {events.map((ev) => (
-                  <tr key={ev._id} className="hover:bg-zinc-800/40 transition-colors">
-                    <td className="px-5 py-3.5 font-medium text-zinc-200">
-                      {new Date(ev.date).toLocaleDateString('he-IL')}
-                    </td>
-                    <td className="px-5 py-3.5 font-semibold text-white">{getEventTypeHebrew(ev.type)}</td>
-                    <td className="px-5 py-3.5 text-zinc-300">
-                      {typeof ev.client === 'object' ? ev.client.name : 'ללא לקוח'}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded text-[11px] font-semibold ${
-                          ev.status === 'Scheduled'
-                            ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
-                            : ev.status === 'Completed'
-                            ? 'bg-zinc-800 text-zinc-300 border border-zinc-700/60'
-                            : 'bg-red-500/10 text-red-400 border border-red-500/20'
-                        }`}
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>תאריך</TableHead>
+                <TableHead>סוג אירוע</TableHead>
+                <TableHead>לקוח</TableHead>
+                <TableHead>סטטוס</TableHead>
+                <TableHead>תעריף</TableHead>
+                <TableHead>תשלום</TableHead>
+                <TableHead>תיאור</TableHead>
+                <TableHead className="text-left">ייצוא ליומן / פעולות</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {events.map((ev) => (
+                <TableRow key={ev._id}>
+                  <TableCell className="font-bold text-ink-black">
+                    {new Date(ev.date).toLocaleDateString('he-IL')}
+                  </TableCell>
+                  <TableCell className="font-bold text-ink-black">{getEventTypeHebrew(ev.type)}</TableCell>
+                  <TableCell className="font-medium text-slate-gray">
+                    {typeof ev.client === 'object' ? ev.client.name : 'ללא לקוח'}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={
+                      ev.status === 'Scheduled' ? 'scheduled' :
+                      ev.status === 'Completed' ? 'completed' : 'cancelled'
+                    }>
+                      {getStatusHebrew(ev.status)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-ink-black font-bold font-heading">
+                    {ev.amount ? `₪${ev.amount.toLocaleString()}` : '-'}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={ev.isPaid ? 'paid' : 'unpaid'}>
+                      {ev.isPaid ? 'שולם' : 'טרם שולם'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-slate-gray max-w-xs truncate">
+                    {ev.description || '-'}
+                  </TableCell>
+                  <TableCell className="text-left">
+                    <div className="flex items-center justify-end space-x-1.5 space-x-reverse">
+                      {/* Apple Calendar iCal Export */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => downloadAppleIcsFile(ev)}
+                        title="ייצא ל-Apple Calendar / iCal"
                       >
-                        {getStatusHebrew(ev.status)}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-zinc-400 max-w-xs truncate">
-                      {ev.description || '-'}
-                    </td>
-                    <td className="px-5 py-3.5 text-left">
-                      <div className="flex items-center justify-end space-x-1.5 space-x-reverse">
-                        {/* Apple Calendar iCal Export */}
-                        <button
-                          onClick={() => downloadAppleIcsFile(ev)}
-                          className="px-2 py-1 rounded-md text-[11px] font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/60 flex items-center gap-1 transition-colors"
-                          title="ייצא ל-Apple Calendar / iCal"
-                        >
-                          <CalendarPlus className="w-3.5 h-3.5 text-indigo-400" />
-                          <span>Apple Calendar</span>
-                        </button>
+                        <CalendarPlus className="w-3.5 h-3.5 text-ink-black ml-1" />
+                        <span>Apple Calendar</span>
+                      </Button>
 
-                        {/* Google Calendar Direct Link */}
-                        <a
-                          href={getGoogleCalendarUrl(ev)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="p-1 rounded-md text-zinc-400 hover:text-indigo-300 hover:bg-indigo-500/10 transition-colors"
-                          title="ייצא ל-Google Calendar"
-                        >
-                          <CalendarPlus className="w-3.5 h-3.5 text-zinc-400" />
-                        </a>
+                      {/* Google Calendar Direct Link */}
+                      <a
+                        href={getGoogleCalendarUrl(ev)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="p-2 rounded-xl text-slate-gray hover:text-ink-black hover:bg-canvas-cream transition-colors"
+                        title="ייצא ל-Google Calendar"
+                      >
+                        <CalendarPlus className="w-4 h-4" />
+                      </a>
 
-                        <button
-                          onClick={() => openEditModal(ev)}
-                          className="p-1 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-                          title="ערוך אירוע"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(ev._id)}
-                          className="p-1 rounded-md text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                          title="מחק אירוע"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openEditModal(ev)}
+                        title="ערוך אירוע"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(ev._id)}
+                        className="hover:text-[#CF4500]"
+                        title="מחק אירוע"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
-      </div>
+      </Card>
 
-      {/* Modal Dialog */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="fixed inset-0 bg-zinc-950/80 backdrop-blur-sm"
-            onClick={() => setIsModalOpen(false)}
-          />
-          <div className="relative z-10 bg-zinc-900 border border-zinc-800 rounded-xl p-6 max-w-md w-full shadow-2xl space-y-4 text-zinc-100">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <h3 className="text-base font-bold text-white">
-                {editingEventId ? 'עריכת אירוע מתוזמן' : 'תזמון אירוע חדש'}
-              </h3>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 rounded-lg text-zinc-400 hover:text-zinc-200 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+      {/* Shadcn Dialog */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span>{editingEventId ? 'עריכת אירוע' : 'תזמון אירוע חדש'}</span>
+            </DialogTitle>
+          </DialogHeader>
 
-            <form onSubmit={handleSubmit} className="space-y-3.5">
+          <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+            {modalError && (
+              <div className="p-3 rounded-xl bg-[#CF4500]/10 border border-[#CF4500]/20 text-[#CF4500] text-xs font-semibold">
+                {modalError}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[11px] font-medium text-zinc-400 mb-1">לקוח</label>
+                <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">סוג אירוע</label>
                 <select
-                  required
+                  value={type}
+                  onChange={(e) => setType(e.target.value as IServiceEvent['type'])}
+                  className="w-full h-10 bg-white border border-[#141413]/15 rounded-xl px-4 py-2 text-xs text-[#141413] focus:outline-none focus:border-[#141413] transition-all"
+                >
+                  <option value="DJ Gig">תקליטנות (DJ)</option>
+                  <option value="Software Development">פיתוח תוכנה</option>
+                  <option value="Maintenance">תחזוקה</option>
+                  <option value="Consulting">ייעוץ</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">לקוח (אופציונלי)</label>
+                <select
                   value={clientId}
                   onChange={(e) => setClientId(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700"
+                  className="w-full h-10 bg-white border border-[#141413]/15 rounded-xl px-4 py-2 text-xs text-[#141413] focus:outline-none focus:border-[#141413] transition-all"
                 >
-                  <option value="">-- בחר לקוח --</option>
+                  <option value="">-- ללא לקוח --</option>
                   {clients.map((c) => (
                     <option key={c._id} value={c._id}>
                       {c.name} ({c.type})
@@ -297,81 +345,73 @@ export default function Events() {
                   ))}
                 </select>
               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-medium text-zinc-400 mb-1">סוג אירוע</label>
-                  <select
-                    value={type}
-                    onChange={(e) => setType(e.target.value as IServiceEvent['type'])}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700"
-                  >
-                    <option value="DJ Gig">תקליטנות (DJ)</option>
-                    <option value="Software Development">פיתוח תוכנה</option>
-                    <option value="Maintenance">תחזוקה</option>
-                    <option value="Consulting">ייעוץ</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[11px] font-medium text-zinc-400 mb-1">סטטוס</label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value as IServiceEvent['status'])}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700"
-                  >
-                    <option value="Scheduled">מתוכנן</option>
-                    <option value="Completed">הושלם</option>
-                    <option value="Cancelled">בוטל</option>
-                  </select>
-                </div>
-              </div>
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[11px] font-medium text-zinc-400 mb-1">תאריך</label>
-                <input
+                <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">תאריך</label>
+                <Input
                   type="date"
                   required
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-medium text-zinc-400 mb-1">תיאור (אופציונלי)</label>
-                <textarea
-                  rows={2}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="פירוט ציוד, שעות מופע, או דרישות נוספות..."
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700"
+                <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">סכום / תעריף (₪)</label>
+                <Input
+                  type="number"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="1500"
                 />
               </div>
+            </div>
 
-              <div className="pt-2 flex justify-end space-x-2 space-x-reverse">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors"
-                >
-                  ביטול
-                </button>
-                <button
-                  type="submit"
-                  disabled={isCreating || isUpdating}
-                  className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold px-4 py-1.5 rounded-lg shadow-md shadow-indigo-500/20 transition-all text-xs border border-indigo-400/20 disabled:opacity-50"
-                >
-                  {isCreating || isUpdating
-                    ? 'שומר...'
-                    : editingEventId
-                    ? 'עדכן אירוע'
-                    : 'שמור אירוע'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            <div>
+              <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">סטטוס</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as IServiceEvent['status'])}
+                className="w-full h-10 bg-white border border-[#141413]/15 rounded-xl px-4 py-2 text-xs text-[#141413] focus:outline-none focus:border-[#141413] transition-all"
+              >
+                <option value="Scheduled">מתוכנן</option>
+                <option value="Completed">הושלם</option>
+                <option value="Cancelled">בוטל</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">תיאור / הערות</label>
+              <textarea
+                rows={2}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="פרטי האירוע, מיקום, שעות וכו'..."
+                className="w-full bg-white border border-[#141413]/15 rounded-xl px-4 py-2 text-xs text-[#141413] placeholder:text-[#64748B] focus:outline-none focus:border-[#141413] transition-all"
+              />
+            </div>
+
+            <div className="pt-2 flex justify-end space-x-2 space-x-reverse border-t border-ink-black/10">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsModalOpen(false)}
+              >
+                ביטול
+              </Button>
+              <Button
+                type="submit"
+                disabled={isCreating || isUpdating}
+              >
+                {isCreating || isUpdating ? 'שומר...' : editingEventId ? 'עדכן אירוע' : 'תזמן אירוע'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+

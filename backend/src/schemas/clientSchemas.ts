@@ -10,6 +10,7 @@ export const createClientSchema = z.object({
         phone: z.string().optional(),
       })
       .optional(),
+    defaultEventPrice: z.number().optional(),
   }),
 });
 
@@ -26,5 +27,6 @@ export const updateClientSchema = z.object({
         phone: z.string().optional(),
       })
       .optional(),
+    defaultEventPrice: z.number().optional(),
   }),
 });

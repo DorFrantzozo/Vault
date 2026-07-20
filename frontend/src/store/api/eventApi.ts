@@ -12,7 +12,7 @@ export const eventApi = baseApi.injectEndpoints({
     }),
     createEvent: builder.mutation<
       { status: string; data: { event: IServiceEvent } },
-      { client: string; type: IServiceEvent['type']; date: string; description?: string; status?: IServiceEvent['status'] }
+      { client: string; type: IServiceEvent['type']; date: string; description?: string; status?: IServiceEvent['status']; amount?: number; isPaid?: boolean }
     >({
       query: (body) => ({
         url: '/events',
@@ -23,7 +23,7 @@ export const eventApi = baseApi.injectEndpoints({
     }),
     updateEvent: builder.mutation<
       { status: string; data: { event: IServiceEvent } },
-      { id: string; client?: string; type?: IServiceEvent['type']; date?: string; description?: string; status?: IServiceEvent['status'] }
+      { id: string; client?: string; type?: IServiceEvent['type']; date?: string; description?: string; status?: IServiceEvent['status']; amount?: number; isPaid?: boolean }
     >({
       query: ({ id, ...body }) => ({
         url: `/events/${id}`,
@@ -39,6 +39,16 @@ export const eventApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['ServiceEvent'],
     }),
+    markClientEventsAsPaid: builder.mutation<
+      { status: string; message: string; data: { eventsUpdated: number; totalAmount: number } },
+      string
+    >({
+      query: (clientId) => ({
+        url: `/events/client/${clientId}/mark-paid`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['ServiceEvent', 'Transaction'],
+    }),
   }),
 });
 
@@ -47,4 +57,5 @@ export const {
   useCreateEventMutation,
   useUpdateEventMutation,
   useDeleteEventMutation,
+  useMarkClientEventsAsPaidMutation,
 } = eventApi;

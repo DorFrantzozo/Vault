@@ -7,6 +7,8 @@ export const createEventSchema = z.object({
     date: z.string().or(z.string().datetime()),
     description: z.string().optional(),
     status: z.enum(['Scheduled', 'Completed', 'Cancelled']).optional(),
+    amount: z.number().optional(),
+    isPaid: z.boolean().optional(),
   }),
 });
 
@@ -20,5 +22,7 @@ export const updateEventSchema = z.object({
     date: z.string().or(z.string().datetime()).optional(),
     description: z.string().optional(),
     status: z.enum(['Scheduled', 'Completed', 'Cancelled']).optional(),
+    amount: z.number().optional(),
+    isPaid: z.boolean().optional(),
   }),
 });

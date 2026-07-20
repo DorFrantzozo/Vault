@@ -11,6 +11,7 @@ const CalendarPage = React.lazy(() => import('./pages/CalendarPage.js'));
 const Ledger = React.lazy(() => import('./pages/Ledger.js'));
 const Clients = React.lazy(() => import('./pages/Clients.js'));
 const Events = React.lazy(() => import('./pages/Events.js'));
+const Balances = React.lazy(() => import('./pages/Balances.js'));
 const SettingsPage = React.lazy(() => import('./pages/SettingsPage.js'));
 
 import { ModalProvider } from './components/common/ModalContext.js';
@@ -38,6 +39,7 @@ export default function App() {
                   <Route path="/ledger" element={<Ledger />} />
                   <Route path="/clients" element={<Clients />} />
                   <Route path="/events" element={<Events />} />
+                  <Route path="/balances" element={<Balances />} />
                   <Route path="/settings" element={<SettingsPage />} />
                 </Route>
               </Route>

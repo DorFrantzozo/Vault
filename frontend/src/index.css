@@ -2,28 +2,131 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Warm Light Theme — Gray background, White cards */
+  --canvas-cream: #F3F0EE;    /* App background: warm off-white gray */
+  --lifted-cream: #FFFFFF;     /* Card / surface: pure white */
+  --ink-black: #141413;        /* Main text: near-black */
+  --signal-orange: #CF4500;
+  --light-signal-orange: #F37338;
+  --clay-brown: #C2410C;
+  --slate-gray: #475569;       /* Muted text */
+  --dust-taupe: #D4D0CC;       /* Divider / border */
+  --link-blue: #2563EB;
+  --soft-bone: #F3F0EE;        /* Secondary surfaces / inputs */
+
+  --bg-app: #F3F0EE;
+  --bg-sidebar: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F8F7F6;
+  --bg-input: #F3F0EE;
+
+  --border-subtle: rgba(20, 20, 19, 0.08);
+  --border-strong: rgba(20, 20, 19, 0.15);
+
+  /* Text & Typography */
+  --text-main: #141413;
+  --text-muted: #475569;
+  --text-subtle: #94A3B8;
+
+  --font-heading: "Sofia Sans", "Rubik", "Heebo", sans-serif;
+  --font-body: "Sofia Sans", "Heebo", "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
 @layer base {
   body {
-    @apply text-neutral-100 min-h-screen font-['Heebo',sans-serif];
-    background-color: #090a0f;
+    background-color: var(--canvas-cream);
+    color: var(--ink-black);
+    min-height: 100vh;
+    font-family: var(--font-body);
+    font-weight: 450;
     direction: rtl;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-heading {
+    font-family: var(--font-heading);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+
+  h1 {
+    font-size: 4rem;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  h2 {
+    font-size: 2.25rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  input,
+  select,
+  textarea {
+    transition: all 0.2s ease-in-out;
+  }
+
+  button {
+    transition: all 0.2s ease-in-out;
   }
 }
 
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #090a0f;
+  background: #F3F0EE;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e202e;
-  border-radius: 4px;
+  background: #D4D0CC;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #2e3247;
+  background: #B8B4B0;
+}
+
+/* Light theme select/option fix */
+select {
+  background-color: var(--bg-input);
+  color: var(--text-main);
+  color-scheme: light;
+}
+
+select option {
+  background-color: var(--bg-card);
+  color: var(--text-main);
+}
+
+textarea {
+  background-color: var(--bg-input);
+  color: var(--text-main);
+}
+
+textarea::placeholder {
+  color: var(--text-muted);
+}
+
+input[type="date"],
+input[type="number"],
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  color-scheme: light;
 }

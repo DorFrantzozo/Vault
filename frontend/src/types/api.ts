@@ -11,6 +11,7 @@ export interface IClient {
     email?: string;
     phone?: string;
   };
+  defaultEventPrice?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -22,6 +23,8 @@ export interface IServiceEvent {
   date: string;
   description?: string;
   status: 'Scheduled' | 'Completed' | 'Cancelled';
+  amount: number;
+  isPaid: boolean;
   createdAt: string;
   updatedAt: string;
 }

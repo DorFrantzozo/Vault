@@ -37,21 +37,21 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({ onFileSelect, select
 
   return (
     <div>
-      <label className="block text-xs font-medium text-slate-300 mb-2">
+      <label className="block text-[11px] font-bold text-[#696969] mb-1.5 uppercase tracking-wider font-heading">
         קבלה / אסמכתא (אופציונלי)
       </label>
 
       {selectedFile ? (
-        <div className="flex items-center justify-between p-3.5 bg-slate-800 rounded-xl border border-sky-500/40 text-slate-200">
+        <div className="flex items-center justify-between p-3.5 bg-white rounded-full border border-[ink-black]/15 text-[ink-black] shadow-xs">
           <div className="flex items-center space-x-3 space-x-reverse truncate">
             {selectedFile.type.startsWith('image/') ? (
-              <ImageIcon className="w-5 h-5 text-sky-400 shrink-0" />
+              <ImageIcon className="w-5 h-5 text-[#CF4500] shrink-0" />
             ) : (
-              <FileText className="w-5 h-5 text-indigo-400 shrink-0" />
+              <FileText className="w-5 h-5 text-[ink-black] shrink-0" />
             )}
             <div className="truncate">
-              <p className="text-xs font-medium truncate">{selectedFile.name}</p>
-              <p className="text-[10px] text-slate-400">
+              <p className="text-xs font-semibold truncate text-[ink-black]">{selectedFile.name}</p>
+              <p className="text-[10px] text-[#696969]">
                 {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
               </p>
             </div>
@@ -59,7 +59,7 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({ onFileSelect, select
           <button
             type="button"
             onClick={() => onFileSelect(null)}
-            className="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-700/50"
+            className="p-1.5 rounded-full text-[#696969] hover:text-[#CF4500] hover:bg-canvas-cream transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -70,10 +70,10 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({ onFileSelect, select
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200 ${
+          className={`border-2 border-dashed rounded-[20px] p-6 text-center cursor-pointer transition-all duration-200 ${
             isDragging
-              ? 'border-sky-400 bg-sky-500/10'
-              : 'border-slate-700 hover:border-slate-500 bg-slate-800/40'
+              ? 'border-[#CF4500] bg-[#CF4500]/5'
+              : 'border-[ink-black]/20 hover:border-[ink-black]/40 bg-canvas-cream/50'
           }`}
         >
           <input
@@ -83,13 +83,14 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({ onFileSelect, select
             accept="image/jpeg,image/png,image/webp,application/pdf"
             className="hidden"
           />
-          <UploadCloud className="w-8 h-8 text-sky-400 mx-auto mb-2" />
-          <p className="text-xs font-medium text-slate-200">
-            גרור והפלת קבלה לכאן, או <span className="text-sky-400 underline">לחץ לעיון בקבצים</span>
+          <UploadCloud className="w-8 h-8 text-[#CF4500] mx-auto mb-2" />
+          <p className="text-xs font-semibold text-[ink-black]">
+            גרור והפלת קבלה לכאן, או <span className="text-[#CF4500] underline font-bold">לחץ לעיון בקבצים</span>
           </p>
-          <p className="text-[10px] text-slate-500 mt-1">תומך בקבצי JPG, PNG, WEBP, PDF עד 5MB</p>
+          <p className="text-[10px] text-[#696969] mt-1">תומך בקבצי JPG, PNG, WEBP, PDF עד 5MB</p>
         </div>
       )}
     </div>
   );
 };
+

@@ -4,7 +4,6 @@ import {
   ChevronLeft,
   CalendarDays,
   Plus,
-  X,
   CalendarPlus,
   Clock,
   Building2
@@ -13,6 +12,17 @@ import { useGetEventsQuery } from '../store/api/eventApi.js';
 import { IServiceEvent } from '../types/api.js';
 import { downloadAppleIcsFile, getEventTypeHebrew } from '../utils/calendarExport.js';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+
+import { Card, CardDescription } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog';
 
 export default function CalendarPage() {
   const navigate = useNavigate();
@@ -100,85 +110,80 @@ export default function CalendarPage() {
     );
   };
 
-  const getEventBadgeStyle = (type: IServiceEvent['type'], status: IServiceEvent['status']) => {
+  const getEventBadgeStyle = (_type: IServiceEvent['type'], status: IServiceEvent['status']) => {
     if (status === 'Cancelled') {
-      return 'bg-red-500/10 text-red-400 border border-red-500/20 line-through';
+      return 'bg-[#CF4500]/10 text-[#CF4500] border border-[#CF4500]/20 line-through';
     }
     if (status === 'Completed') {
-      return 'bg-zinc-800 text-zinc-300 border border-zinc-700/60 opacity-80';
+      return 'bg-canvas-cream text-[slate-gray] border border-[ink-black]/10';
     }
-
-    switch (type) {
-      case 'DJ Gig':
-        return 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-semibold';
-      case 'Software Development':
-        return 'bg-violet-500/20 text-violet-300 border border-violet-500/30 font-semibold';
-      case 'Maintenance':
-        return 'bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold';
-      case 'Consulting':
-        return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold';
-      default:
-        return 'bg-zinc-800 text-zinc-200 border border-zinc-700';
-    }
+    return 'bg-[ink-black] text-white';
   };
 
   const dayNames = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
 
   return (
-    <div className="space-y-6 text-zinc-100 pb-6">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+      className="space-y-6 sm:space-y-8 text-[ink-black] pb-8 font-sans"
+    >
       {/* Header Row & Month Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-zinc-800/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[ink-black]/10">
         <div className="text-right">
-          <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            <CalendarDays className="w-5 h-5 text-indigo-400" />
+          <h1 className="text-2.5xl sm:text-3xl font-medium tracking-tight text-[ink-black] font-heading flex items-center gap-2">
+            <CalendarDays className="w-6 h-6 text-[ink-black]" />
             <span>יומן אירועים חודשי</span>
           </h1>
-          <p className="text-xs text-zinc-400 mt-0.5">תצוגת לוח שנה מלאה למעקב אחר הופעות, פרויקטים ומשימות</p>
+          <p className="text-xs text-[slate-gray] mt-1 font-sans">תצוגת לוח שנה מלאה למעקב אחר הופעות, פרויקטים ומשימות</p>
         </div>
 
         {/* Navigation & Action Controls */}
-        <div className="flex items-center space-x-2 space-x-reverse self-start sm:self-auto">
-          <button
-            onClick={goToToday}
-            className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-semibold text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors"
-          >
-            היום
-          </button>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Button variant="outline" onClick={goToToday} className="flex-1 sm:flex-initial">
+              היום
+            </Button>
 
-          <div className="flex items-center bg-zinc-900 border border-zinc-800 rounded-lg p-1">
-            <button
-              onClick={prevMonth}
-              className="p-1 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-              title="חודש קודם"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-            <span className="px-3 text-xs font-bold text-white min-w-[100px] text-center">
-              {monthLabel}
-            </span>
-            <button
-              onClick={nextMonth}
-              className="p-1 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-              title="חודש הבא"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
+            <div className="flex items-center justify-between bg-lifted-cream border border-[ink-black]/20 rounded-xl px-2 py-1 shadow-xs flex-1 sm:flex-initial">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={prevMonth}
+                title="חודש קודם"
+                className="h-8 w-8"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+              <span className="px-2 text-xs font-bold text-[ink-black] min-w-[100px] text-center font-heading">
+                {monthLabel}
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={nextMonth}
+                title="חודש הבא"
+                className="h-8 w-8"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
 
-          <button
-            onClick={() => navigate('/events')}
-            className="flex items-center space-x-1.5 space-x-reverse bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold px-3.5 py-1.5 rounded-lg shadow-md shadow-indigo-500/20 transition-all text-xs border border-indigo-400/20 active:scale-95"
-          >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>תזמן אירוע</span>
-          </button>
+          <motion.div whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
+            <Button variant="default" onClick={() => navigate('/events')} className="w-full justify-center">
+              <Plus className="w-4 h-4 stroke-[2.5] ml-1.5" />
+              <span>תזמן אירוע</span>
+            </Button>
+          </motion.div>
         </div>
       </div>
 
       {/* Calendar Grid Container */}
-      <div className="bg-[#12131c] border border-zinc-800/90 rounded-xl shadow-md shadow-black/40 overflow-hidden">
+      <Card className="p-3 sm:p-5 overflow-hidden">
         {/* Days of Week Header */}
-        <div className="grid grid-cols-7 bg-zinc-950/90 border-b border-zinc-800/80 text-center py-2.5 text-xs font-bold text-zinc-400">
+        <div className="grid grid-cols-7 bg-canvas-cream border-b border-[ink-black]/10 text-center py-2.5 text-[11px] sm:text-xs font-bold text-[slate-gray] uppercase tracking-wider rounded-t-xl mb-2 font-heading">
           {dayNames.map((name, idx) => (
             <div key={idx} className="truncate">
               {name}
@@ -188,9 +193,9 @@ export default function CalendarPage() {
 
         {/* Calendar Days Cells */}
         {isLoading ? (
-          <div className="p-20 text-center text-zinc-400 text-xs">טוען יומן אירועים...</div>
+          <div className="p-20 text-center text-[slate-gray] text-xs font-medium">טוען יומן אירועים...</div>
         ) : (
-          <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-x-reverse divide-zinc-800/60 text-right">
+          <div className="grid grid-cols-7 gap-1.5 sm:gap-2 text-right">
             {calendarDays.map(({ date: dayDate, isCurrentMonth }, idx) => {
               const dateKey = `${dayDate.getFullYear()}-${String(dayDate.getMonth() + 1).padStart(2, '0')}-${String(dayDate.getDate()).padStart(2, '0')}`;
               const dayEvents = eventsByDate[dateKey] || [];
@@ -200,49 +205,47 @@ export default function CalendarPage() {
                 <div
                   key={idx}
                   onClick={() => setSelectedDayEvents({ date: dayDate, events: dayEvents })}
-                  className={`min-h-[110px] p-2 flex flex-col justify-between transition-all cursor-pointer group ${
-                    isCurrentMonth ? 'bg-zinc-900/40 hover:bg-zinc-800/50' : 'bg-zinc-950/60 opacity-40 hover:opacity-70'
-                  } ${today ? 'ring-1 ring-indigo-500/80 bg-indigo-500/5' : ''}`}
+                  className={`min-h-[90px] sm:min-h-[110px] p-2 sm:p-3 flex flex-col justify-between transition-all cursor-pointer rounded-xl border ${
+                    isCurrentMonth
+                      ? 'bg-lifted-cream hover:bg-canvas-cream/80 border-[ink-black]/10 shadow-xs'
+                      : 'bg-canvas-cream/40 opacity-50 border-[ink-black]/5'
+                  } ${today ? 'ring-2 ring-[ink-black] bg-lifted-cream shadow-xs' : ''}`}
                 >
                   {/* Day Number Header */}
                   <div className="flex items-center justify-between mb-1">
                     <span
-                      className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center ${
+                      className={`text-xs font-bold w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center ${
                         today
-                          ? 'bg-indigo-600 text-white shadow-sm'
+                          ? 'bg-[ink-black] text-white shadow-xs'
                           : isCurrentMonth
-                          ? 'text-zinc-300'
-                          : 'text-zinc-500'
+                          ? 'text-[ink-black]'
+                          : 'text-[#64748B]'
                       }`}
                     >
                       {dayDate.getDate()}
                     </span>
 
                     {dayEvents.length > 0 && (
-                      <span className="text-[10px] font-medium text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-1.5 py-0.5 rounded-full">
-                        {dayEvents.length} אירועים
-                      </span>
+                      <Badge variant="secondary" className="text-[9px] sm:text-[10px] px-1.5 py-0.5 font-semibold">
+                        {dayEvents.length}
+                      </Badge>
                     )}
                   </div>
 
                   {/* Day Events Pills */}
-                  <div className="space-y-1 overflow-y-auto max-h-[85px] scrollbar-none flex-1">
-                    {dayEvents.slice(0, 3).map((ev) => (
+                  <div className="space-y-1 overflow-y-auto max-h-[75px] sm:max-h-[85px] scrollbar-none flex-1">
+                    {dayEvents.slice(0, 2).map((ev) => (
                       <div
                         key={ev._id}
-                        className={`text-[10px] px-1.5 py-1 rounded truncate border ${getEventBadgeStyle(
-                          ev.type,
-                          ev.status
-                        )}`}
+                        className={`text-[9px] sm:text-[10px] px-1.5 py-0.5 sm:py-1 rounded-lg truncate font-semibold shadow-xs ${getEventBadgeStyle(ev.type, ev.status)}`}
                       >
-                        <span className="font-bold">{getEventTypeHebrew(ev.type)}</span>
-                        <span className="opacity-80 font-normal"> • {typeof ev.client === 'object' ? ev.client?.name : 'לקוח'}</span>
+                        <span>{getEventTypeHebrew(ev.type)}</span>
                       </div>
                     ))}
 
-                    {dayEvents.length > 3 && (
-                      <div className="text-[9px] text-zinc-400 font-semibold text-left pl-1">
-                        +{dayEvents.length - 3} נוספים...
+                    {dayEvents.length > 2 && (
+                      <div className="text-[9px] text-[slate-gray] font-bold text-left pl-1">
+                        +{dayEvents.length - 2} נוספים...
                       </div>
                     )}
                   </div>
@@ -251,86 +254,76 @@ export default function CalendarPage() {
             })}
           </div>
         )}
-      </div>
+      </Card>
 
-      {/* Day Inspector Modal */}
-      {selectedDayEvents && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="fixed inset-0 bg-zinc-950/80 backdrop-blur-sm"
-            onClick={() => setSelectedDayEvents(null)}
-          />
-          <div className="relative z-10 bg-zinc-900 border border-zinc-800 rounded-xl p-6 max-w-lg w-full shadow-2xl space-y-4 text-zinc-100">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <div>
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <CalendarDays className="w-4 h-4 text-indigo-400" />
-                  <span>אירועים ליום {selectedDayEvents.date.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                </h3>
-                <p className="text-xs text-zinc-400 mt-0.5">פירוט מלא של האירועים והמשימות ביום זה</p>
-              </div>
-              <button
-                onClick={() => setSelectedDayEvents(null)}
-                className="p-1 rounded-lg text-zinc-400 hover:text-zinc-200 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+      {/* Day Inspector Dialog */}
+      <Dialog open={!!selectedDayEvents} onOpenChange={() => setSelectedDayEvents(null)}>
+        {selectedDayEvents && (
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <CalendarDays className="w-4 h-4 text-[ink-black]" />
+                <span>אירועים ליום {selectedDayEvents.date.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+              </DialogTitle>
+              <CardDescription>פירוט מלא של האירועים והמשימות ביום זה</CardDescription>
+            </DialogHeader>
 
             {selectedDayEvents.events.length === 0 ? (
-              <div className="p-8 border border-dashed border-zinc-800/80 rounded-xl bg-zinc-950/40 text-center space-y-2">
-                <CalendarDays className="w-8 h-8 text-zinc-600 mx-auto" />
-                <p className="text-xs text-zinc-400 font-medium">אין אירועים מתוכננים ביום זה</p>
-                <button
+              <div className="p-8 border border-dashed border-[ink-black]/15 rounded-xl bg-canvas-cream/50 text-center space-y-2">
+                <CalendarDays className="w-8 h-8 text-[slate-gray] mx-auto" />
+                <p className="text-xs text-[slate-gray] font-medium">אין אירועים מתוכננים ביום זה</p>
+                <Button
+                  variant="link"
                   onClick={() => {
                     setSelectedDayEvents(null);
                     navigate('/events');
                   }}
-                  className="mt-2 text-xs text-indigo-400 hover:underline font-semibold"
+                  className="text-xs text-[#CF4500]"
                 >
                   + תזמן אירוע ליום זה
-                </button>
+                </Button>
               </div>
             ) : (
               <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
                 {selectedDayEvents.events.map((ev) => (
                   <div
                     key={ev._id}
-                    className="p-4 rounded-xl bg-zinc-950/80 border border-zinc-800/90 shadow-sm space-y-2"
+                    className="p-4 rounded-xl bg-canvas-cream/60 border border-[ink-black]/10 shadow-xs space-y-2"
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold mb-1 border ${getEventBadgeStyle(ev.type, ev.status)}`}>
+                        <Badge variant="default" className="mb-1 text-[10px]">
                           {getEventTypeHebrew(ev.type)}
-                        </span>
-                        <h4 className="text-sm font-bold text-white flex items-center gap-1.5">
-                          <Building2 className="w-3.5 h-3.5 text-zinc-400" />
+                        </Badge>
+                        <h4 className="text-sm font-bold text-[ink-black] flex items-center gap-1.5">
+                          <Building2 className="w-3.5 h-3.5 text-[slate-gray]" />
                           <span>{typeof ev.client === 'object' ? ev.client?.name : 'לקוח כללי'}</span>
                         </h4>
                       </div>
 
-                      <button
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => downloadAppleIcsFile(ev)}
-                        className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/60 flex items-center gap-1.5 transition-colors shrink-0"
                         title="ייצא ל-Apple Calendar"
                       >
-                        <CalendarPlus className="w-3.5 h-3.5 text-indigo-400" />
+                        <CalendarPlus className="w-3.5 h-3.5 text-[#CF4500] ml-1" />
                         <span>Apple Calendar</span>
-                      </button>
+                      </Button>
                     </div>
 
                     {ev.description && (
-                      <p className="text-xs text-zinc-300 bg-zinc-900 p-2.5 rounded-lg border border-zinc-800/80">
+                      <p className="text-xs text-[ink-black] bg-lifted-cream p-3 rounded-lg border border-[ink-black]/10">
                         {ev.description}
                       </p>
                     )}
 
-                    <div className="flex items-center justify-between text-[11px] text-zinc-400 pt-1 border-t border-zinc-800/60">
+                    <div className="flex items-center justify-between text-[11px] text-[slate-gray] pt-1 border-t border-[ink-black]/10">
                       <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-zinc-500" />
+                        <Clock className="w-3 h-3 text-[slate-gray]" />
                         <span>{new Date(ev.date).toLocaleDateString('he-IL')}</span>
                       </div>
-                      <span className="font-semibold text-zinc-300">
+                      <span className="font-semibold text-[ink-black]">
                         סטטוס: {ev.status === 'Scheduled' ? 'מתוכנן' : ev.status === 'Completed' ? 'הושלם' : 'בוטל'}
                       </span>
                     </div>
@@ -339,17 +332,15 @@ export default function CalendarPage() {
               </div>
             )}
 
-            <div className="pt-2 border-t border-zinc-800 flex justify-end">
-              <button
-                onClick={() => setSelectedDayEvents(null)}
-                className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors"
-              >
+            <div className="pt-2 border-t border-[ink-black]/10 flex justify-end">
+              <Button variant="dark" onClick={() => setSelectedDayEvents(null)}>
                 סגור
-              </button>
+              </Button>
             </div>
-          </div>
-        </div>
-      )}
-    </div>
+          </DialogContent>
+        )}
+      </Dialog>
+    </motion.div>
   );
 }
+

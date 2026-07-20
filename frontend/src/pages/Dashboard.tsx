@@ -11,7 +11,7 @@ import {
   CalendarOff,
   BellRing,
   CheckCircle,
-  X
+  Briefcase
 } from 'lucide-react';
 import {
   useGetTransactionSummaryQuery,
@@ -36,8 +36,35 @@ import { RootState } from '../store/store.js';
 import { Link, useNavigate } from 'react-router-dom';
 import { ITransaction, IServiceEvent } from '../types/api.js';
 import { ServiceBreakdownChart } from '../components/dashboard/ServiceBreakdownChart.js';
-
 import { useModal } from '../components/common/ModalContext.js';
+import { motion } from 'framer-motion';
+
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import { Input } from '../components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog';
+
+// Motion Animation Variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.07,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+};
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -64,6 +91,9 @@ export default function Dashboard() {
   const upcomingEvents = eventsData?.data?.events?.slice(0, 5) || [];
   const upcomingBillings = upcomingBillingsData?.data?.billings || [];
   const allBillings = allBillingsData?.data?.billings || [];
+
+  const openGigsCount = eventsData?.data?.events?.filter((e: IServiceEvent) => !e.isPaid && (e.amount || 0) > 0).length || 0;
+  const openGigsAmount = eventsData?.data?.events?.filter((e: IServiceEvent) => !e.isPaid && (e.amount || 0) > 0).reduce((sum: number, e: IServiceEvent) => sum + (e.amount || 0), 0) || 0;
 
   // Local State
   const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
@@ -97,65 +127,52 @@ export default function Dashboard() {
       const permission = await Notification.requestPermission();
       setPushStatus(permission as any);
 
-      if (permission === 'granted') {
+      if (permission === 'granted' && vapidData?.data?.publicKey) {
         const registration = await navigator.serviceWorker.ready;
-        const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY || vapidData?.data?.publicKey;
-        if (!vapidPublicKey) {
-          await showAlert('מפתחות VAPID אינם זמינים כרגע. אנא הגדר VITE_VAPID_PUBLIC_KEY בקובץ ה-env.', 'שגיאה', 'danger');
-          return;
-        }
-
-        const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: convertedVapidKey
+          applicationServerKey: vapidData.data.publicKey
         });
 
         await subscribeToPush(subscription.toJSON()).unwrap();
-        await showAlert('נרשמת בהצלחה לקבלת התראות פוש!', 'הצלחה', 'success');
+        await showAlert('התראות פוש הופעלו בהצלחה!', 'התראות פוש', 'info');
       }
-    } catch (error) {
-      console.error('Push setup error:', error);
-      await showAlert('אירעה שגיאה בעת ההרשמה להתראות.', 'שגיאה', 'danger');
+    } catch (err) {
+      console.error('Failed to enable push:', err);
     }
   };
 
-  function urlBase64ToUint8Array(base64String: string) {
-    const padding = '='.repeat((4 - base64String.length % 4) % 4);
-    const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
-    const rawData = window.atob(base64);
-    const outputArray = new Uint8Array(rawData.length);
-    for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i);
-    }
-    return outputArray;
-  }
-
-  // Chart Data
+  // 12-Month Financial Chart Calculation
   const chartData = useMemo(() => {
-    const months: { label: string; income: number; expense: number; month: number; year: number }[] = [];
+    const monthNames = ['ינו', 'פבר', 'מרץ', 'אפר', 'מאי', 'יוני', 'יולי', 'אוג', 'ספט', 'אוק', 'נוב', 'דצמ'];
     const now = new Date();
+    const months: { label: string; year: number; month: number; income: number; expense: number }[] = [];
+
     for (let i = 11; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       months.push({
-        label: d.toLocaleDateString('he-IL', { month: 'short' }),
+        label: monthNames[d.getMonth()],
+        year: d.getFullYear(),
+        month: d.getMonth(),
         income: 0,
         expense: 0,
-        month: d.getMonth(),
-        year: d.getFullYear(),
       });
     }
 
     allTransactions.forEach((tx: ITransaction) => {
       const txDate = new Date(tx.date);
-      const dataPoint = months.find(m => m.month === txDate.getMonth() && m.year === txDate.getFullYear());
-      if (dataPoint) {
-        if (tx.type === 'Income') dataPoint.income += tx.amount;
-        else if (tx.type === 'Expense') dataPoint.expense += tx.amount;
+      const match = months.find((m) => m.year === txDate.getFullYear() && m.month === txDate.getMonth());
+      if (match) {
+        if (tx.type === 'Income') match.income += tx.amount;
+        else if (tx.type === 'Expense') match.expense += tx.amount;
       }
     });
 
-    const maxVal = Math.max(...months.map(m => Math.max(m.income, m.expense)), 1000);
+    const maxVal = Math.max(
+      ...months.map((m) => Math.max(m.income, m.expense)),
+      1000
+    );
+
     return { months, maxVal };
   }, [allTransactions]);
 
@@ -163,7 +180,6 @@ export default function Dashboard() {
     navigate('/ledger');
   };
 
-  // Billing Modal Handlers
   const openNewBillingModal = () => {
     setEditingBillingId(null);
     setBClientName('');
@@ -174,13 +190,13 @@ export default function Dashboard() {
     setIsBillingModalOpen(true);
   };
 
-  const openEditBillingModal = (b: IRecurringBilling) => {
-    setEditingBillingId(b._id);
-    setBClientName(b.clientName);
-    setBDesc(b.serviceDescription);
-    setBAmount(b.amount);
-    setBCycle(b.billingCycle);
-    setBNextDate(new Date(b.nextBillingDate).toISOString().split('T')[0]);
+  const openEditBillingModal = (billing: IRecurringBilling) => {
+    setEditingBillingId(billing._id);
+    setBClientName(billing.clientName);
+    setBDesc(billing.serviceDescription || '');
+    setBAmount(billing.amount);
+    setBCycle(billing.billingCycle);
+    setBNextDate(new Date(billing.nextBillingDate).toISOString().split('T')[0]);
     setIsBillingModalOpen(true);
   };
 
@@ -235,357 +251,389 @@ export default function Dashboard() {
     }
   };
 
+  const formattedUserName = user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1) : 'משתמש';
+
   return (
-    <div className="space-y-6 text-zinc-100 pb-6">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="space-y-6 md:space-y-8 text-ink-black pb-8 font-sans"
+    >
       {/* Header Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-zinc-800/80">
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-ink-black/10">
         <div className="text-right">
-          <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            <span>לוח בקרה</span>
+          <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-ink-black font-heading">
+            לוח בקרה
           </h1>
-          <p className="text-xs text-zinc-400 mt-0.5">
-            שלום <span className="font-semibold text-indigo-300">{user?.username || 'מנהל'}</span>, סקירה כספית ותפעולית בזמן אמת
+          <p className="text-xs sm:text-sm text-slate-gray mt-1 font-sans">
+            שלום <span className="font-semibold text-ink-black">{formattedUserName}</span>, סקירה כספית ותפעולית בזמן אמת
           </p>
         </div>
         
-        <div className="flex items-center space-x-2 space-x-reverse self-start sm:self-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
           {pushStatus !== 'granted' && (
-            <button
-              onClick={handleEnablePush}
-              className="flex items-center space-x-1.5 space-x-reverse bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-semibold px-3.5 py-2 rounded-lg transition-all text-xs border border-zinc-700 active:scale-95"
-            >
-              <BellRing className="w-3.5 h-3.5 text-amber-400" />
-              <span>הפעל התראות</span>
-            </button>
+            <motion.div whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
+              <Button variant="outline" onClick={handleEnablePush} className="w-full justify-center">
+                <BellRing className="w-4 h-4 text-[#CF4500] ml-1.5" />
+                <span>הפעל התראות</span>
+              </Button>
+            </motion.div>
           )}
 
-          <button
-            onClick={openNewBillingModal}
-            className="flex items-center space-x-1.5 space-x-reverse bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-semibold px-3.5 py-2 rounded-lg transition-all text-xs border border-zinc-700 active:scale-95"
-          >
-            <Clock className="w-3.5 h-3.5 text-emerald-400" />
-            <span>הוסף מעקב חיוב</span>
-          </button>
+          <motion.div whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
+            <Button variant="outline" onClick={openNewBillingModal} className="w-full justify-center">
+              <Clock className="w-4 h-4 text-[#F37338] ml-1.5" />
+              <span>הוסף מעקב חיוב</span>
+            </Button>
+          </motion.div>
 
-          <button
-            onClick={handleCreateClick}
-            className="flex items-center space-x-1.5 space-x-reverse bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold px-4 py-2 rounded-lg shadow-md shadow-indigo-500/20 transition-all text-xs border border-indigo-400/20 active:scale-95"
-          >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>יצירה</span>
-          </button>
+          <motion.div whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
+            <Button variant="default" onClick={handleCreateClick} className="w-full justify-center">
+              <Plus className="w-4 h-4 stroke-[2.5] ml-1.5" />
+              <span>יצירה</span>
+            </Button>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-[#12131c] border border-zinc-800/90 rounded-xl p-4 shadow-md shadow-black/40 flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">הכנסה חודשית</p>
-            <h3 className="text-2xl font-bold tracking-tight text-white">
-              {summaryLoading ? '...' : formatCurrency(summary?.monthlyIncome)}
-            </h3>
+      {/* Open Gigs Banner */}
+      {openGigsCount > 0 && (
+        <motion.div variants={itemVariants}>
+          <div className="bg-lifted-cream border border-ink-black/10 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] text-ink-black">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-canvas-cream text-ink-black rounded-xl border border-ink-black/15 shrink-0">
+                <Briefcase className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-base font-semibold text-ink-black font-heading">יש לך {openGigsCount} עבודות פתוחות לתשלום</h3>
+                <p className="text-xs text-slate-gray mt-0.5 font-normal">סך כל החובות הפתוחים: <span className="font-bold text-ink-black">{formatCurrency(openGigsAmount)}</span></p>
+              </div>
+            </div>
+            <Link to="/balances" className="w-full sm:w-auto">
+              <Button variant="outline" className="w-full sm:w-auto bg-canvas-cream text-ink-black border-none rounded-xl">
+                ניהול חובות
+              </Button>
+            </Link>
           </div>
-          <div className="p-2.5 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-indigo-400">
-            <TrendingUp className="w-5 h-5" />
-          </div>
-        </div>
-        <div className="bg-[#12131c] border border-zinc-800/90 rounded-xl p-4 shadow-md shadow-black/40 flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">הוצאות חודשיות</p>
-            <h3 className="text-2xl font-bold tracking-tight text-white">
-              {summaryLoading ? '...' : formatCurrency(summary?.monthlyExpenses)}
-            </h3>
-          </div>
-          <div className="p-2.5 rounded-lg bg-zinc-800/80 border border-zinc-700/60 text-zinc-300">
-            <TrendingDown className="w-5 h-5" />
-          </div>
-        </div>
-        <div className="bg-[#12131c] border border-zinc-800/90 rounded-xl p-4 shadow-md shadow-black/40 flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">הכנסות שנתיות</p>
-            <h3 className="text-2xl font-bold tracking-tight text-white">
-              {summaryLoading ? '...' : formatCurrency(summary?.annualIncome)}
-            </h3>
-          </div>
-          <div className="p-2.5 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-indigo-400">
-            <Activity className="w-5 h-5" />
-          </div>
-        </div>
-        <div className="bg-[#12131c] border border-zinc-800/90 rounded-xl p-4 shadow-md shadow-black/40 flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">רווח שנתי נקי</p>
-            <h3 className="text-2xl font-bold tracking-tight text-white">
-              {summaryLoading ? '...' : formatCurrency(summary?.annualNet)}
-            </h3>
-          </div>
-          <div className="p-2.5 rounded-lg bg-zinc-800/80 border border-zinc-700/60 text-zinc-200">
-            <CreditCard className="w-5 h-5" />
-          </div>
-        </div>
-      </div>
+        </motion.div>
+      )}
+
+      {/* KPI Summary Cards Grid (1 col mobile, 2 col tablet, 4 col desktop) */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+        <motion.div whileHover={{ y: -3 }} whileTap={{ scale: 0.98 }} className="will-change-transform">
+          <Card className="p-5 sm:p-6 transition-all hover:border-ink-black/25 flex items-center justify-between group h-full">
+            <div>
+              <p className="text-xs font-semibold text-slate-gray uppercase tracking-wider mb-1.5 font-heading">
+                הכנסה חודשית
+              </p>
+              <h3 className="text-2xl font-bold tracking-tight text-ink-black font-heading">
+                {summaryLoading ? '...' : formatCurrency(summary?.monthlyIncome)}
+              </h3>
+            </div>
+            <TrendingUp className="w-6 h-6 text-emerald-400 shrink-0 group-hover:scale-110 transition-transform" />
+          </Card>
+        </motion.div>
+
+        <motion.div whileHover={{ y: -3 }} whileTap={{ scale: 0.98 }} className="will-change-transform">
+          <Card className="p-5 sm:p-6 transition-all hover:border-ink-black/25 flex items-center justify-between group h-full">
+            <div>
+              <p className="text-xs font-semibold text-slate-gray uppercase tracking-wider mb-1.5 font-heading">
+                הוצאות חודשיות
+              </p>
+              <h3 className="text-2xl font-bold tracking-tight text-ink-black font-heading">
+                {summaryLoading ? '...' : formatCurrency(summary?.monthlyExpenses)}
+              </h3>
+            </div>
+            <TrendingDown className="w-6 h-6 text-[#CF4500] shrink-0 group-hover:scale-110 transition-transform" />
+          </Card>
+        </motion.div>
+
+        <motion.div whileHover={{ y: -3 }} whileTap={{ scale: 0.98 }} className="will-change-transform">
+          <Card className="p-5 sm:p-6 transition-all hover:border-ink-black/25 flex items-center justify-between group h-full">
+            <div>
+              <p className="text-xs font-semibold text-slate-gray uppercase tracking-wider mb-1.5 font-heading">
+                הכנסות שנתיות
+              </p>
+              <h3 className="text-2xl font-bold tracking-tight text-ink-black font-heading">
+                {summaryLoading ? '...' : formatCurrency(summary?.annualIncome)}
+              </h3>
+            </div>
+            <Activity className="w-6 h-6 text-ink-black shrink-0 group-hover:scale-110 transition-transform" />
+          </Card>
+        </motion.div>
+
+        <motion.div whileHover={{ y: -3 }} whileTap={{ scale: 0.98 }} className="will-change-transform">
+          <Card className="p-5 sm:p-6 transition-all hover:border-ink-black/25 flex items-center justify-between group h-full">
+            <div>
+              <p className="text-xs font-semibold text-slate-gray uppercase tracking-wider mb-1.5 font-heading">
+                רווח שנתי נקי
+              </p>
+              <h3 className="text-2xl font-bold tracking-tight text-ink-black font-heading">
+                {summaryLoading ? '...' : formatCurrency(summary?.annualNet)}
+              </h3>
+            </div>
+            <CreditCard className="w-6 h-6 text-[#F37338] shrink-0 group-hover:scale-110 transition-transform" />
+          </Card>
+        </motion.div>
+      </motion.div>
 
       {/* Row 2: 12-Month Bar Chart & Service Donut */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        <div className="lg:col-span-7 bg-[#12131c] border border-zinc-800/90 rounded-xl p-5 shadow-md shadow-black/40 flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        <Card className="lg:col-span-7 flex flex-col justify-between">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div>
-              <h3 className="text-sm font-bold text-white">הכנסות מול הוצאות</h3>
-              <p className="text-xs text-zinc-400 mt-0.5">נתונים כספיים ל-12 החודשים האחרונים</p>
+              <CardTitle>הכנסות מול הוצאות</CardTitle>
+              <CardDescription className="mt-0.5">נתונים כספיים ל-12 החודשים האחרונים</CardDescription>
             </div>
-            <div className="flex items-center space-x-3 space-x-reverse text-xs font-medium">
-              <div className="flex items-center space-x-1.5 space-x-reverse px-2.5 py-1 rounded-full bg-zinc-950/80 border border-zinc-800">
-                <span className="w-2.5 h-2.5 rounded-sm bg-indigo-500"></span>
-                <span className="text-zinc-300">הכנסות</span>
+            <div className="flex items-center space-x-3 space-x-reverse text-xs font-medium shrink-0">
+              <div className="flex items-center space-x-1.5 space-x-reverse">
+                <span className="w-2.5 h-2.5 rounded-full bg-ink-black"></span>
+                <span className="text-ink-black font-semibold">הכנסות</span>
               </div>
-              <div className="flex items-center space-x-1.5 space-x-reverse px-2.5 py-1 rounded-full bg-zinc-950/80 border border-zinc-800">
-                <span className="w-2.5 h-2.5 rounded-sm bg-zinc-500"></span>
-                <span className="text-zinc-300">הוצאות</span>
-              </div>
-            </div>
-          </div>
-          <div className="relative h-56 my-2 pt-2 flex flex-col justify-between">
-            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-[10px] text-zinc-500 font-mono">
-              <div className="w-full border-b border-dashed border-zinc-800/80 flex justify-between items-center pb-0.5">
-                <span>{formatCurrency(chartData.maxVal)}</span>
-              </div>
-              <div className="w-full border-b border-dashed border-zinc-800/80 flex justify-between items-center pb-0.5">
-                <span>{formatCurrency(chartData.maxVal * 0.5)}</span>
-              </div>
-              <div className="w-full border-b border-zinc-800 flex justify-between items-center pb-0.5">
-                <span>₪0</span>
+              <div className="flex items-center space-x-1.5 space-x-reverse">
+                <span className="w-2.5 h-2.5 rounded-full bg-dust-taupe"></span>
+                <span className="text-slate-gray font-medium">הוצאות</span>
               </div>
             </div>
-            <div className="relative z-10 h-full flex items-end justify-between space-x-1 space-x-reverse pt-4">
-              {chartData.months.map((data, idx) => (
-                <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full group relative">
-                  <div className="absolute -top-11 opacity-0 group-hover:opacity-100 transition-all duration-200 bg-zinc-950 text-[10px] p-2 rounded-lg border border-zinc-800 z-20 whitespace-nowrap shadow-xl pointer-events-none">
-                    <div className="font-bold text-white mb-0.5">{data.label}</div>
-                    <div className="text-indigo-400 font-semibold">הכנסות: {formatCurrency(data.income)}</div>
-                    <div className="text-zinc-400 font-semibold">הוצאות: {formatCurrency(data.expense)}</div>
+          </CardHeader>
+
+          <CardContent className="pt-0">
+            {/* Scrollable Container for Mobile Charts */}
+            <div className="overflow-x-auto scrollbar-none pb-2">
+              <div className="min-w-[500px] relative h-64 my-2 pt-14 flex flex-col justify-between">
+                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-xs text-slate-gray font-mono">
+                  <div className="w-full border-b border-dashed border-ink-black/10 flex justify-between items-center pb-0.5">
+                    <span>{formatCurrency(chartData.maxVal)}</span>
                   </div>
-                  <div className="w-full flex justify-center space-x-0.5 space-x-reverse h-full items-end bg-zinc-950/40 hover:bg-zinc-950/80 rounded-t-sm px-0.5 transition-colors">
-                    <div className="w-[45%] bg-indigo-500 hover:bg-indigo-400 rounded-t-[2px] transition-all duration-300" style={{ height: `${Math.max((data.income / chartData.maxVal) * 100, 3)}%` }} />
-                    <div className="w-[45%] bg-zinc-600 hover:bg-zinc-500 rounded-t-[2px] transition-all duration-300" style={{ height: `${Math.max((data.expense / chartData.maxVal) * 100, 3)}%` }} />
+                  <div className="w-full border-b border-dashed border-ink-black/10 flex justify-between items-center pb-0.5">
+                    <span>{formatCurrency(chartData.maxVal * 0.5)}</span>
+                  </div>
+                  <div className="w-full border-b border-ink-black/10 flex justify-between items-center pb-0.5">
+                    <span>₪0</span>
                   </div>
                 </div>
-              ))}
+                <div className="relative z-10 h-full flex items-end justify-between space-x-1.5 space-x-reverse pt-4">
+                  {chartData.months.map((data, idx) => (
+                    <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full group relative">
+                      <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all duration-200 bg-lifted-cream text-ink-black text-[10px] p-3 rounded-xl border border-ink-black/15 z-20 whitespace-nowrap shadow-xl pointer-events-none">
+                        <div className="font-bold text-ink-black mb-0.5">{data.label} {data.year}</div>
+                        <div className="text-[#CF4500] font-bold">הכנסות: {formatCurrency(data.income)}</div>
+                        <div className="text-slate-gray font-medium">הוצאות: {formatCurrency(data.expense)}</div>
+                      </div>
+                      <div className="w-full flex justify-center space-x-1 space-x-reverse h-full items-end bg-canvas-cream hover:bg-canvas-cream/80 rounded-t-xl px-1 transition-colors">
+                        <div className="w-[45%] bg-[#CF4500] hover:bg-[#CF4500]/95 rounded-t-lg transition-all duration-300 shadow-xs" style={{ height: `${Math.max((data.income / chartData.maxVal) * 100, 3)}%` }} />
+                        <div className="w-[45%] bg-dust-taupe hover:bg-dust-taupe/80 rounded-t-lg transition-all duration-300" style={{ height: `${Math.max((data.expense / chartData.maxVal) * 100, 3)}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="min-w-[500px] flex justify-between items-center mt-2 text-xs font-bold text-slate-gray border-t border-ink-black/10 pt-2 px-1 font-heading">
+                {chartData.months.map((data, idx) => (
+                  <div key={idx} className="flex-1 text-center truncate">{data.label}</div>
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="flex justify-between items-center mt-2 text-[10px] font-medium text-zinc-400 border-t border-zinc-800/80 pt-2 px-1">
-            {chartData.months.map((data, idx) => (
-              <div key={idx} className="flex-1 text-center truncate">{data.label}</div>
-            ))}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
+
         <div className="lg:col-span-5">
           <ServiceBreakdownChart transactions={allTransactions} />
         </div>
-      </div>
+      </motion.div>
 
-      {/* Row 3: Upcoming Billings & Events */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+      {/* Row 3: Upcoming Billings & Events (Stacked on Mobile) */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Upcoming Billings (5 days) */}
-        <div className="bg-[#12131c] border border-zinc-800/90 rounded-xl p-5 shadow-md shadow-black/40">
-          <div className="flex items-center justify-between mb-3 border-b border-zinc-800/80 pb-2.5">
-            <div className="flex items-center space-x-2 space-x-reverse">
-              <CreditCard className="w-4 h-4 text-emerald-400" />
-              <h3 className="text-sm font-bold text-white">חיובים קרובים (5 ימים)</h3>
-            </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-ink-black/10">
+            <CardTitle className="flex items-center space-x-2 space-x-reverse">
+              <CreditCard className="w-4.5 h-4.5 text-ink-black" />
+              <span>חיובים קרובים (5 ימים)</span>
+            </CardTitle>
             <button onClick={() => {
                 if (allBillings.length > 0) openEditBillingModal(allBillings[0]);
                 else openNewBillingModal();
-              }} className="text-xs text-zinc-400 hover:text-white flex items-center space-x-1 space-x-reverse transition-colors">
+              }} className="text-xs text-slate-gray hover:text-ink-black flex items-center space-x-1 space-x-reverse transition-colors font-semibold">
               <span>ניהול חיובים</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
-          </div>
+          </CardHeader>
 
-          {upcomingBillings.length === 0 ? (
-            <div className="border border-dashed border-zinc-800/80 rounded-lg p-5 bg-zinc-950/40 flex flex-col items-center justify-center space-y-1.5 text-center my-2">
-              <CheckCircle className="w-6 h-6 text-emerald-600/50 stroke-[1.5]" />
-              <p className="text-xs text-zinc-400 font-medium">אין חיובים תקופתיים קרובים</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {upcomingBillings.map((b: IRecurringBilling) => (
-                <div key={b._id} className="flex items-center justify-between p-2.5 rounded-lg bg-zinc-950/60 border border-emerald-500/20 hover:border-emerald-500/40 transition-colors">
-                  <div>
-                    <h4 className="text-xs font-bold text-white">{b.clientName}</h4>
-                    <p className="text-[10px] text-zinc-400 mt-0.5">
-                      לתאריך: {new Date(b.nextBillingDate).toLocaleDateString('he-IL')} • {b.serviceDescription}
-                    </p>
+          <CardContent className="pt-4">
+            {upcomingBillings.length === 0 ? (
+              <div className="border border-dashed border-ink-black/15 rounded-xl p-6 bg-canvas-cream/50 flex flex-col items-center justify-center space-y-1.5 text-center my-2">
+                <CheckCircle className="w-7 h-7 text-[#CF4500] stroke-[1.5]" />
+                <p className="text-xs text-slate-gray font-medium">אין חיובים תקופתיים קרובים</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {upcomingBillings.map((b: IRecurringBilling) => (
+                  <div key={b._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-white border border-ink-black/10 hover:border-ink-black/30 transition-all shadow-xs gap-3">
+                    <div>
+                      <h4 className="text-xs font-bold text-ink-black">{b.clientName}</h4>
+                      <p className="text-[11px] text-slate-gray mt-0.5">
+                        לתאריך: {new Date(b.nextBillingDate).toLocaleDateString('he-IL')} • {b.serviceDescription}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-3 space-x-reverse self-end sm:self-auto">
+                      <Badge variant="secondary" className="text-ink-black font-bold text-xs px-3 py-1 border border-ink-black/10 bg-canvas-cream">
+                        {formatCurrency(b.amount)}
+                      </Badge>
+                      <Button
+                        size="sm"
+                        onClick={() => handleMarkAsPaid(b._id)}
+                      >
+                        סומן כשולם
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-3 space-x-reverse">
-                    <span className="text-emerald-400 font-bold text-sm bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                      {formatCurrency(b.amount)}
-                    </span>
-                    <button
-                      onClick={() => handleMarkAsPaid(b._id)}
-                      className="text-[10px] font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-2 py-1 rounded border border-zinc-600 transition-colors"
-                    >
-                      סומן כשולם
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Upcoming Events */}
-        <div className="bg-[#12131c] border border-zinc-800/90 rounded-xl p-5 shadow-md shadow-black/40">
-          <div className="flex items-center justify-between mb-3 border-b border-zinc-800/80 pb-2.5">
-            <div className="flex items-center space-x-2 space-x-reverse">
-              <CalendarDays className="w-4 h-4 text-indigo-400" />
-              <h3 className="text-sm font-bold text-white">אירועים קרובים</h3>
-            </div>
-            <Link to="/events" className="text-xs text-zinc-400 hover:text-white flex items-center space-x-1 space-x-reverse transition-colors">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-ink-black/10">
+            <CardTitle className="flex items-center space-x-2 space-x-reverse">
+              <CalendarDays className="w-4.5 h-4.5 text-ink-black" />
+              <span>אירועים קרובים</span>
+            </CardTitle>
+            <Link to="/events" className="text-xs text-slate-gray hover:text-ink-black flex items-center space-x-1 space-x-reverse transition-colors font-semibold">
               <span>לכל האירועים</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
-          </div>
+          </CardHeader>
 
-          {upcomingEvents.length === 0 ? (
-            <div className="border border-dashed border-zinc-800/80 rounded-lg p-5 bg-zinc-950/40 flex flex-col items-center justify-center space-y-1.5 text-center my-2">
-              <CalendarOff className="w-6 h-6 text-zinc-600 stroke-[1.5]" />
-              <p className="text-xs text-zinc-400 font-medium">אין אירועים קרובים להצגה</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {upcomingEvents.map((evt: IServiceEvent) => (
-                <div key={evt._id} className="flex items-center justify-between p-2.5 rounded-lg bg-zinc-950/60 border border-zinc-800/80 hover:border-zinc-700/80 transition-colors">
-                  <div>
-                    <h4 className="text-xs font-semibold text-white">
-                      {evt.type === 'DJ Gig' ? 'אירוע תקליטנות' : evt.type === 'Software Development' ? 'פיתוח תוכנה' : 'תחזוקה וייעוץ'}
-                    </h4>
-                    <p className="text-[10px] text-zinc-400 mt-0.5">
-                      {typeof evt.client === 'object' ? evt.client.name : 'לקוח כללי'}
-                    </p>
+          <CardContent className="pt-4">
+            {upcomingEvents.length === 0 ? (
+              <div className="border border-dashed border-ink-black/15 rounded-xl p-6 bg-canvas-cream/50 flex flex-col items-center justify-center space-y-1.5 text-center my-2">
+                <CalendarOff className="w-7 h-7 text-slate-gray stroke-[1.5]" />
+                <p className="text-xs text-slate-gray font-medium">אין אירועים קרובים להצגה</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {upcomingEvents.map((evt: IServiceEvent) => (
+                  <div key={evt._id} className="flex items-center justify-between p-4 rounded-xl bg-white border border-ink-black/10 hover:border-ink-black/30 transition-all shadow-xs">
+                    <div>
+                      <h4 className="text-xs font-bold text-ink-black">
+                        {evt.type === 'DJ Gig' ? 'אירוע תקליטנות' : evt.type === 'Software Development' ? 'פיתוח תוכנה' : 'תחזוקה וייעוץ'}
+                      </h4>
+                      <p className="text-[11px] text-slate-gray mt-0.5">
+                        {typeof evt.client === 'object' ? evt.client.name : 'לקוח כללי'}
+                      </p>
+                    </div>
+                    <Badge variant={evt.status === 'Scheduled' ? 'dark' as any : 'secondary'}>
+                      {evt.status === 'Scheduled' ? 'מתוכנן' : 'הושלם'}
+                    </Badge>
                   </div>
-                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${evt.status === 'Scheduled' ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30' : 'bg-zinc-800 text-zinc-300 border border-zinc-700/60'}`}>
-                    {evt.status === 'Scheduled' ? 'מתוכנן' : 'הושלם'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
 
-      {/* Modal Dialog for Recurring Billing */}
-      {isBillingModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="fixed inset-0 bg-zinc-950/80 backdrop-blur-sm"
-            onClick={() => setIsBillingModalOpen(false)}
-          />
-          <div className="relative z-10 bg-zinc-900 border border-zinc-800 rounded-xl p-6 max-w-md w-full shadow-2xl space-y-4 text-zinc-100">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Clock className="w-4 h-4 text-emerald-400" />
-                <span>{editingBillingId ? 'עריכת מעקב חיוב' : 'הוספת מעקב חיוב חדש'}</span>
-              </h3>
-              <button
-                onClick={() => setIsBillingModalOpen(false)}
-                className="p-1 rounded-lg text-zinc-400 hover:text-zinc-200 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
+      {/* Shadcn Dialog for Recurring Billing */}
+      <Dialog open={isBillingModalOpen} onOpenChange={setIsBillingModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-[#CF4500]" />
+              <span>{editingBillingId ? 'עריכת מעקב חיוב' : 'הוספת מעקב חיוב חדש'}</span>
+            </DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={saveBilling} className="space-y-4 pt-2">
+            <div>
+              <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">שם לקוח</label>
+              <Input
+                type="text"
+                required
+                value={bClientName}
+                onChange={(e) => setBClientName(e.target.value)}
+                placeholder="לדוגמה: iMenu"
+              />
             </div>
 
-            <form onSubmit={saveBilling} className="space-y-3.5">
+            <div>
+              <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">תיאור שירות</label>
+              <Input
+                type="text"
+                value={bDesc}
+                onChange={(e) => setBDesc(e.target.value)}
+                placeholder="לדוגמה: ריטיינר חודשי מערכת"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-medium text-zinc-400 mb-1">שם לקוח</label>
-                <input
-                  type="text"
+                <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">סכום חיוב (₪)</label>
+                <Input
+                  type="number"
                   required
-                  value={bClientName}
-                  onChange={(e) => setBClientName(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700"
-                  placeholder="לדוגמה: iMenu"
+                  min={0}
+                  value={bAmount}
+                  onChange={(e) => setBAmount(Number(e.target.value))}
                 />
               </div>
-
               <div>
-                <label className="block text-[11px] font-medium text-zinc-400 mb-1">תיאור שירות</label>
-                <input
-                  type="text"
-                  value={bDesc}
-                  onChange={(e) => setBDesc(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700"
-                  placeholder="לדוגמה: ריטיינר חודשי מערכת"
-                />
+                <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">מחזור חיוב</label>
+                <select
+                  value={bCycle}
+                  onChange={(e) => setBCycle(e.target.value as 'Monthly' | 'Yearly')}
+                  className="w-full h-10 bg-canvas-cream border border-ink-black/15 rounded-xl px-4 py-2 text-xs text-ink-black focus:outline-none focus:border-ink-black focus:bg-lifted-cream transition-all"
+                >
+                  <option value="Monthly">חודשי</option>
+                  <option value="Yearly">שנתי</option>
+                </select>
               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-medium text-zinc-400 mb-1">סכום חיוב (₪)</label>
-                  <input
-                    type="number"
-                    required
-                    min={0}
-                    value={bAmount}
-                    onChange={(e) => setBAmount(Number(e.target.value))}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-medium text-zinc-400 mb-1">מחזור חיוב</label>
-                  <select
-                    value={bCycle}
-                    onChange={(e) => setBCycle(e.target.value as 'Monthly' | 'Yearly')}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700"
-                  >
-                    <option value="Monthly">חודשי</option>
-                    <option value="Yearly">שנתי</option>
-                  </select>
-                </div>
+            <div>
+              <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">תאריך חיוב קרוב</label>
+              <Input
+                type="date"
+                required
+                value={bNextDate}
+                onChange={(e) => setBNextDate(e.target.value)}
+              />
+            </div>
+
+            <div className="pt-3 flex justify-between items-center border-t border-ink-black/10">
+              {editingBillingId ? (
+                <Button
+                  type="button"
+                  variant="link"
+                  onClick={() => deleteBillingHandler(editingBillingId)}
+                  className="p-0 text-xs text-[#CF4500]"
+                >
+                  מחק חיוב
+                </Button>
+              ) : <div/>}
+
+              <div className="flex space-x-2 space-x-reverse">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setIsBillingModalOpen(false)}
+                >
+                  ביטול
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isCreatingBilling || isUpdatingBilling}
+                >
+                  {isCreatingBilling || isUpdatingBilling ? 'שומר...' : 'שמור חיוב'}
+                </Button>
               </div>
-
-              <div>
-                <label className="block text-[11px] font-medium text-zinc-400 mb-1">תאריך חיוב קרוב</label>
-                <input
-                  type="date"
-                  required
-                  value={bNextDate}
-                  onChange={(e) => setBNextDate(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700"
-                />
-              </div>
-
-              <div className="pt-3 flex justify-between items-center">
-                {editingBillingId ? (
-                  <button
-                    type="button"
-                    onClick={() => deleteBillingHandler(editingBillingId)}
-                    className="text-xs text-red-400 hover:text-red-300 transition-colors"
-                  >
-                    מחק חיוב
-                  </button>
-                ) : <div/>}
-
-                <div className="flex space-x-2 space-x-reverse">
-                  <button
-                    type="button"
-                    onClick={() => setIsBillingModalOpen(false)}
-                    className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors"
-                  >
-                    ביטול
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isCreatingBilling || isUpdatingBilling}
-                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-4 py-1.5 rounded-lg shadow-md shadow-emerald-500/20 transition-all text-xs border border-emerald-400/20 disabled:opacity-50"
-                  >
-                    {isCreatingBilling || isUpdatingBilling ? 'שומר...' : 'שמור חיוב'}
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </motion.div>
   );
 }

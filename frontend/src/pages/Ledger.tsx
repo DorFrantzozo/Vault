@@ -1,5 +1,15 @@
-import React, { useState } from 'react';
-import { Plus, Trash2, ExternalLink, Filter, X, Pencil, UserPlus, Check } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import {
+  Plus,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Trash2,
+  Pencil,
+  FileSpreadsheet,
+  Users,
+  Search,
+  Paperclip
+} from 'lucide-react';
 import {
   useGetTransactionsQuery,
   useCreateTransactionMutation,
@@ -7,102 +17,93 @@ import {
   useDeleteTransactionMutation,
 } from '../store/api/transactionApi.js';
 import { useGetClientsQuery, useCreateClientMutation } from '../store/api/clientApi.js';
-import { useGetEventsQuery } from '../store/api/eventApi.js';
+import { ITransaction } from '../types/api.js';
 import { FileDropzone } from '../components/ledger/FileDropzone.js';
-import { ITransaction, IServiceEvent, IClient } from '../types/api.js';
 import { useModal } from '../components/common/ModalContext.js';
+
+import { Card } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import { Input } from '../components/ui/input';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '../components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog';
 
 export default function Ledger() {
   const { confirm } = useModal();
-  const [filterType, setFilterType] = useState<string>('');
-  const [filterClient, setFilterClient] = useState<string>('');
-  const [startDate, setStartDate] = useState<string>('');
-  const [endDate, setEndDate] = useState<string>('');
-
+  const [filterType, setFilterType] = useState<'ALL' | 'Income' | 'Expense'>('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTxId, setEditingTxId] = useState<string | null>(null);
+  const [editingTransactionId, setEditingTransactionId] = useState<string | null>(null);
 
-  // Form State
-  const [type, setType] = useState<'Income' | 'Expense'>('Income');
-  const [serviceType, setServiceType] = useState<IServiceEvent['type'] | 'General'>('General');
-  const [amount, setAmount] = useState<string>('');
-  const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [clientId, setClientId] = useState<string>('');
-  const [eventId, setEventId] = useState<string>('');
-  const [notes, setNotes] = useState<string>('');
-  const [file, setFile] = useState<File | null>(null);
-
-  // Quick Client Creation State
+  // Quick Client State inside modal
   const [isQuickClientOpen, setIsQuickClientOpen] = useState(false);
   const [newClientName, setNewClientName] = useState('');
-  const [newClientType, setNewClientType] = useState<IClient['type']>('Club');
+  const [newClientType, setNewClientType] = useState<'Club' | 'Producer' | 'Restaurant' | 'Private'>('Club');
   const [newClientEmail, setNewClientEmail] = useState('');
   const [newClientPhone, setNewClientPhone] = useState('');
   const [quickClientError, setQuickClientError] = useState('');
 
-  const { data: transData, isLoading } = useGetTransactionsQuery({
-    type: filterType || undefined,
-    client: filterClient || undefined,
-    startDate: startDate || undefined,
-    endDate: endDate || undefined,
-  });
+  // Form State
+  const [type, setType] = useState<'Income' | 'Expense'>('Income');
+  const [amount, setAmount] = useState<string>('');
+  const [serviceType, setServiceType] = useState<'DJ Gig' | 'Software Development' | 'Maintenance' | 'Consulting' | 'General'>('DJ Gig');
+  const [clientId, setClientId] = useState('');
+  const [eventId, setEventId] = useState('');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [notes, setNotes] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+  // Queries
+  const { data: transData, isLoading } = useGetTransactionsQuery();
   const { data: clientsData } = useGetClientsQuery();
-  const { data: eventsData } = useGetEventsQuery();
 
+  // Mutations
   const [createTransaction, { isLoading: isCreating }] = useCreateTransactionMutation();
   const [updateTransaction, { isLoading: isUpdating }] = useUpdateTransactionMutation();
   const [deleteTransaction] = useDeleteTransactionMutation();
   const [createClient, { isLoading: isCreatingClient }] = useCreateClientMutation();
 
-  const clients = clientsData?.data?.clients || [];
-  const events = eventsData?.data?.events || [];
   const transactions = transData?.data?.transactions || [];
+  const clients = clientsData?.data?.clients || [];
 
-  const [modalError, setModalError] = useState<string>('');
-
-  const openCreateModal = () => {
+  const handleOpenCreateModal = () => {
     resetForm();
-    setEditingTxId(null);
-    setModalError('');
+    setEditingTransactionId(null);
     setIsModalOpen(true);
   };
 
-  const openEditModal = (t: ITransaction) => {
-    setEditingTxId(t._id);
+  const handleOpenEditModal = (t: ITransaction) => {
+    setEditingTransactionId(t._id);
     setType(t.type);
-    setServiceType(t.serviceType || (typeof t.relatedEvent === 'object' ? (t.relatedEvent as IServiceEvent)?.type : 'General'));
     setAmount(t.amount.toString());
+    setServiceType(t.serviceType || 'General');
+    setClientId(typeof t.client === 'object' ? t.client._id : t.client || '');
+    setEventId(typeof t.relatedEvent === 'object' ? t.relatedEvent._id : t.relatedEvent || '');
     setDate(new Date(t.date).toISOString().split('T')[0]);
-    setClientId(typeof t.client === 'object' ? t.client?._id || '' : t.client || '');
-    setEventId(typeof t.relatedEvent === 'object' ? t.relatedEvent?._id || '' : t.relatedEvent || '');
     setNotes(t.notes || '');
-    setFile(null);
-    setModalError('');
-    setIsQuickClientOpen(false);
+    setSelectedFile(null);
     setIsModalOpen(true);
-  };
-
-  const handleEventChange = (selectedEvId: string) => {
-    setEventId(selectedEvId);
-    if (selectedEvId) {
-      const selectedEv = events.find((ev) => ev._id === selectedEvId);
-      if (selectedEv) {
-        setServiceType(selectedEv.type);
-        if (typeof selectedEv.client === 'object' && selectedEv.client?._id) {
-          setClientId(selectedEv.client._id);
-        } else if (typeof selectedEv.client === 'string') {
-          setClientId(selectedEv.client);
-        }
-      }
-    }
   };
 
   const handleQuickClientSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!newClientName) {
+      setQuickClientError('שם לקוח הוא שדה חובה');
+      return;
+    }
     setQuickClientError('');
-    if (!newClientName) return;
-
     try {
       const res = await createClient({
         name: newClientName,
@@ -113,53 +114,51 @@ export default function Ledger() {
         },
       }).unwrap();
 
-      const createdClient = res.data?.client;
-      if (createdClient?._id) {
-        setClientId(createdClient._id);
+      if (res.data?.client?._id) {
+        setClientId(res.data.client._id);
       }
       setIsQuickClientOpen(false);
       setNewClientName('');
       setNewClientEmail('');
       setNewClientPhone('');
     } catch (err: any) {
-      console.error('Failed to create quick client', err);
-      setQuickClientError(err?.data?.message || 'שגיאה ביצירת לקוח חדש.');
+      setQuickClientError(err?.data?.message || 'שגיאה ביצירת לקוח חדש');
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setModalError('');
-    if (!amount || parseFloat(amount) <= 0) return;
-
-    const formData = new FormData();
-    formData.append('type', type);
-    formData.append('serviceType', serviceType);
-    formData.append('amount', amount);
-    formData.append('date', new Date(date).toISOString());
-    if (clientId) formData.append('client', clientId);
-    if (eventId) formData.append('relatedEvent', eventId);
-    if (notes) formData.append('notes', notes);
-    if (file) formData.append('receipt', file);
+    if (!amount || !date) return;
 
     try {
-      if (editingTxId) {
-        await updateTransaction({ id: editingTxId, formData }).unwrap();
+      const formData = new FormData();
+      formData.append('type', type);
+      formData.append('amount', amount);
+      if (type === 'Income' && serviceType) {
+        formData.append('serviceType', serviceType);
+      }
+      if (clientId) formData.append('client', clientId);
+      if (eventId) formData.append('relatedEvent', eventId);
+      formData.append('date', new Date(date).toISOString());
+      if (notes) formData.append('notes', notes);
+      if (selectedFile) formData.append('receipt', selectedFile);
+
+      if (editingTransactionId) {
+        await updateTransaction({ id: editingTransactionId, formData }).unwrap();
       } else {
         await createTransaction(formData).unwrap();
       }
       setIsModalOpen(false);
       resetForm();
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to save transaction', err);
-      setModalError(err?.data?.message || 'שגיאה בשמירת התנועה. בדוק את הפרטים או את הקובץ המצורף.');
     }
   };
 
   const handleDelete = async (id: string) => {
     const isConfirmed = await confirm({
       title: 'מחיקת תנועה',
-      message: 'האם אתה בטוח שברצונך למחוק תנועה זו?',
+      message: 'האם אתה בטוח שברצונך למחוק תנועה זו מעסקת התקציב?',
       confirmText: 'מחק תנועה',
       type: 'danger',
     });
@@ -175,22 +174,38 @@ export default function Ledger() {
 
   const resetForm = () => {
     setType('Income');
-    setServiceType('General');
     setAmount('');
-    setDate(new Date().toISOString().split('T')[0]);
+    setServiceType('DJ Gig');
     setClientId('');
     setEventId('');
+    setDate(new Date().toISOString().split('T')[0]);
     setNotes('');
-    setFile(null);
-    setEditingTxId(null);
-    setIsQuickClientOpen(false);
-    setNewClientName('');
-    setNewClientEmail('');
-    setNewClientPhone('');
+    setSelectedFile(null);
+    setEditingTransactionId(null);
   };
 
-  const formatCurrency = (val: number) =>
-    new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(val);
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((t) => {
+      const matchesType = filterType === 'ALL' || t.type === filterType;
+      const clientName = typeof t.client === 'object' ? t.client?.name : '';
+      const matchesSearch =
+        searchQuery === '' ||
+        (t.notes && t.notes.includes(searchQuery)) ||
+        (t.serviceType && t.serviceType.includes(searchQuery)) ||
+        (clientName && clientName.includes(searchQuery));
+      return matchesType && matchesSearch;
+    });
+  }, [transactions, filterType, searchQuery]);
+
+  const totals = useMemo(() => {
+    let income = 0;
+    let expense = 0;
+    filteredTransactions.forEach((t) => {
+      if (t.type === 'Income') income += t.amount;
+      else expense += t.amount;
+    });
+    return { income, expense, net: income - expense };
+  }, [filteredTransactions]);
 
   const getServiceTypeHebrew = (st?: string) => {
     switch (st) {
@@ -202,438 +217,393 @@ export default function Ledger() {
         return 'תחזוקה';
       case 'Consulting':
         return 'ייעוץ';
-      default:
+      case 'General':
         return 'כללי';
+      default:
+        return st || '-';
     }
   };
 
+  const handleExportCSV = () => {
+    if (filteredTransactions.length === 0) return;
+    const headers = ['תאריך', 'סוג', 'סכום', 'שירות', 'לקוח', 'הערות'];
+    const rows = filteredTransactions.map((t) => [
+      new Date(t.date).toLocaleDateString('he-IL'),
+      t.type === 'Income' ? 'הכנסה' : 'הוצאה',
+      t.amount,
+      getServiceTypeHebrew(t.serviceType),
+      typeof t.client === 'object' ? t.client.name : '-',
+      t.notes || '-',
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers, ...rows].map((e) => e.join(',')).join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `ledger_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
-    <div className="space-y-6 text-zinc-100 pb-6">
+    <div className="space-y-8 text-[ink-black] pb-8 font-sans">
       {/* Header Row */}
-      <div className="flex items-center justify-between pb-3 border-b border-zinc-800/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[ink-black]/10">
         <div className="text-right">
-          <h1 className="text-xl font-bold tracking-tight text-white">ספר תנועות כספיות</h1>
-          <p className="text-xs text-zinc-400 mt-0.5">ניהול, עריכה ומעקב אחר כל ההכנסות, ההוצאות והפילוח העסקי</p>
-        </div>
-        <button
-          onClick={openCreateModal}
-          className="flex items-center space-x-1.5 space-x-reverse bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold px-4 py-2 rounded-lg shadow-md shadow-indigo-500/20 transition-all text-xs border border-indigo-400/20 active:scale-95"
-        >
-          <Plus className="w-4 h-4 stroke-[2.5]" />
-          <span>רישום תנועה חדשה</span>
-        </button>
-      </div>
-
-      {/* Filter Panel */}
-      <div className="bg-[#12131c] border border-zinc-800/90 rounded-xl p-4 shadow-md shadow-black/40 backdrop-blur-sm space-y-3">
-        <div className="flex items-center space-x-2 space-x-reverse text-xs font-semibold text-zinc-300">
-          <Filter className="w-4 h-4 text-zinc-400" />
-          <span>סינון תנועות</span>
+          <h1 className="text-3xl font-medium tracking-tight text-[ink-black] font-heading flex items-center gap-2">
+            <span>ספר תנועות כספיות</span>
+          </h1>
+          <p className="text-xs text-[slate-gray] mt-1 font-sans">ניהול, סיווג ותיעוד הכנסות והוצאות בזמן אמת</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-          <div>
-            <label className="block text-[11px] font-medium text-zinc-400 mb-1">סוג תנועה</label>
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-zinc-700 transition-all"
-            >
-              <option value="">כל הסוגים</option>
-              <option value="Income">הכנסה</option>
-              <option value="Expense">הוצאה</option>
-            </select>
-          </div>
+        <div className="flex items-center space-x-3 space-x-reverse self-start sm:self-auto">
+          <Button variant="outline" onClick={handleExportCSV}>
+            <FileSpreadsheet className="w-4 h-4 text-[slate-gray] ml-1.5" />
+            <span>ייצא ל-CSV</span>
+          </Button>
 
-          <div>
-            <label className="block text-[11px] font-medium text-zinc-400 mb-1">לקוח</label>
-            <select
-              value={filterClient}
-              onChange={(e) => setFilterClient(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-zinc-700 transition-all"
-            >
-              <option value="">כל הלקוחות</option>
-              {clients.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-medium text-zinc-400 mb-1">מתאריך</label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-zinc-700 transition-all"
-            />
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-medium text-zinc-400 mb-1">עד תאריך</label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-zinc-700 transition-all"
-            />
-          </div>
+          <Button variant="default" onClick={handleOpenCreateModal}>
+            <Plus className="w-4 h-4 stroke-[2.5] ml-1.5" />
+            <span>תנועה חדשה</span>
+          </Button>
         </div>
       </div>
 
-      {/* Table Section */}
-      <div className="bg-[#12131c] border border-zinc-800/90 rounded-xl shadow-md shadow-black/40 overflow-hidden">
-        {isLoading ? (
-          <div className="p-12 text-center text-zinc-400 text-xs">טוען נתונים...</div>
-        ) : transactions.length === 0 ? (
-          <div className="p-12 text-center text-zinc-400 text-xs">לא נמצאו תנועות התואמות את החיפוש.</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-right text-xs">
-              <thead className="bg-zinc-950/80 text-zinc-400 text-[11px] font-semibold uppercase border-b border-zinc-800/80">
-                <tr>
-                  <th className="px-5 py-3">תאריך</th>
-                  <th className="px-5 py-3">סוג תנועה</th>
-                  <th className="px-5 py-3">קטגוריית שירות</th>
-                  <th className="px-5 py-3">לקוח</th>
-                  <th className="px-5 py-3">סכום</th>
-                  <th className="px-5 py-3">אסמכתא</th>
-                  <th className="px-5 py-3">הערות</th>
-                  <th className="px-5 py-3 text-left">פעולות</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-800/60 text-zinc-200">
-                {transactions.map((t) => (
-                  <tr key={t._id} className="hover:bg-zinc-800/40 transition-colors">
-                    <td className="px-5 py-3.5 font-medium text-zinc-200">
-                      {new Date(t.date).toLocaleDateString('he-IL')}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded text-[11px] font-semibold ${
-                          t.type === 'Income'
-                            ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
-                            : 'bg-zinc-800 text-zinc-300 border border-zinc-700/60'
-                        }`}
-                      >
-                        {t.type === 'Income' ? 'הכנסה' : 'הוצאה'}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-zinc-300">
-                      <span className="inline-block px-2 py-0.5 rounded bg-zinc-800/80 border border-zinc-700/50 text-[11px] text-zinc-300 font-medium">
-                        {getServiceTypeHebrew(t.serviceType || (typeof t.relatedEvent === 'object' ? (t.relatedEvent as IServiceEvent)?.type : undefined))}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-zinc-300">
-                      {typeof t.client === 'object' ? t.client?.name : 'ללא לקוח'}
-                    </td>
-                    <td className="px-5 py-3.5 font-bold text-white">
-                      {formatCurrency(t.amount)}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      {t.attachmentUrl ? (
-                        <a
-                          href={t.attachmentUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center space-x-1 space-x-reverse text-xs text-indigo-400 hover:underline font-medium"
-                        >
-                          <span>צפה בקבלה</span>
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      ) : (
-                        <span className="text-zinc-500 text-[11px]">אין אסמכתא</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5 text-zinc-400 max-w-xs truncate">
-                      {t.notes || '-'}
-                    </td>
-                    <td className="px-5 py-3.5 text-left">
-                      <div className="flex items-center justify-end space-x-1 space-x-reverse">
-                        <button
-                          onClick={() => openEditModal(t)}
-                          className="p-1 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-                          title="ערוך תנועה"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(t._id)}
-                          className="p-1 rounded-md text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                          title="מחק תנועה"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      {/* Filter & Search Bar */}
+      <Card className="p-4 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+        {/* Type Filter Buttons */}
+        <div className="flex items-center space-x-2 space-x-reverse w-full md:w-auto">
+          <Button
+            variant={filterType === 'ALL' ? 'dark' : 'outline'}
+            onClick={() => setFilterType('ALL')}
+            className="flex-1 md:flex-initial"
+          >
+            הכל
+          </Button>
+          <Button
+            variant={filterType === 'Income' ? 'default' : 'outline'}
+            onClick={() => setFilterType('Income')}
+            className="flex-1 md:flex-initial"
+          >
+            <ArrowUpRight className="w-4 h-4 ml-1" />
+            <span>הכנסות</span>
+          </Button>
+          <Button
+            variant={filterType === 'Expense' ? 'destructive' : 'outline'}
+            onClick={() => setFilterType('Expense')}
+            className="flex-1 md:flex-initial"
+          >
+            <ArrowDownLeft className="w-4 h-4 ml-1" />
+            <span>הוצאות</span>
+          </Button>
+        </div>
 
-      {/* Enlarged Modal Dialog (max-w-2xl) */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div
-            className="fixed inset-0 bg-zinc-950/80 backdrop-blur-sm"
-            onClick={() => setIsModalOpen(false)}
+        {/* Search Input */}
+        <div className="relative w-full md:w-72">
+          <Search className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-[slate-gray]" />
+          <Input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="חיפוש תנועה..."
+            className="pr-11"
           />
-          <div className="relative z-10 bg-zinc-900 border border-zinc-800 rounded-xl p-6 sm:p-7 max-w-2xl w-full shadow-2xl space-y-5 text-zinc-100 my-8">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3.5">
-              <div>
-                <h3 className="text-lg font-bold text-white">
-                  {editingTxId ? 'עריכת תנועה כספית' : 'רישום תנועה חדשה'}
-                </h3>
-                <p className="text-xs text-zinc-400 mt-0.5">הזנת פרטי התנועה, שיוך לקוח ואסמכתאות</p>
-              </div>
+        </div>
+      </Card>
+
+      {/* Transactions Table Section */}
+      <Card className="overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+        {isLoading ? (
+          <div className="p-16 text-center text-[slate-gray] text-xs font-medium">טוען תנועות כספיות...</div>
+        ) : filteredTransactions.length === 0 ? (
+          <div className="p-12 sm:p-16 flex flex-col items-center justify-center space-y-3 text-center">
+            <div className="w-12 h-12 rounded-full bg-canvas-cream flex items-center justify-center text-[slate-gray] mb-1">
+              <FileSpreadsheet className="w-6 h-6 stroke-[1.5]" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-[ink-black] font-bold font-heading">לא נמצאו תנועות כספיות</p>
+              <p className="text-xs text-[slate-gray]">לחץ על "תנועה חדשה" ליצירת רישום הכנסה/הוצאה</p>
+            </div>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>תאריך</TableHead>
+                <TableHead>סוג</TableHead>
+                <TableHead>סכום</TableHead>
+                <TableHead>שירות</TableHead>
+                <TableHead>לקוח</TableHead>
+                <TableHead>הערות</TableHead>
+                <TableHead>קובץ</TableHead>
+                <TableHead className="text-left">פעולות</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredTransactions.map((t) => (
+                <TableRow key={t._id}>
+                  <TableCell className="font-bold text-[ink-black]">
+                    {new Date(t.date).toLocaleDateString('he-IL')}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={t.type === 'Income' ? 'completed' : 'unpaid'}>
+                      {t.type === 'Income' ? 'הכנסה' : 'הוצאה'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className={`font-bold font-heading ${t.type === 'Income' ? 'text-[ink-black]' : 'text-[#CF4500]'}`}>
+                    {t.type === 'Income' ? '+' : '-'}₪{t.amount.toLocaleString()}
+                  </TableCell>
+                  <TableCell className="font-medium text-[slate-gray]">
+                    {getServiceTypeHebrew(t.serviceType)}
+                  </TableCell>
+                  <TableCell className="font-medium text-[slate-gray]">
+                    {typeof t.client === 'object' ? t.client?.name : '-'}
+                  </TableCell>
+                  <TableCell className="text-[slate-gray] max-w-xs truncate">
+                    {t.notes || '-'}
+                  </TableCell>
+                  <TableCell>
+                    {t.attachmentUrl ? (
+                      <a
+                        href={t.attachmentUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-[#CF4500] hover:underline font-semibold"
+                      >
+                        <Paperclip className="w-3.5 h-3.5" />
+                        <span>מסמך</span>
+                      </a>
+                    ) : (
+                      <span className="text-[#94A3B8] text-xs">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-left">
+                    <div className="flex items-center justify-end space-x-1 space-x-reverse">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleOpenEditModal(t)}
+                        title="ערוך תנועה"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(t._id)}
+                        className="hover:text-[#CF4500]"
+                        title="מחק תנועה"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+
+        {/* Table Footer Summary */}
+        <div className="p-4 px-6 bg-canvas-cream/60 border-t border-[ink-black]/10 flex flex-wrap items-center justify-between gap-4 text-xs font-bold font-heading">
+          <div>סה"כ תנועות: {filteredTransactions.length}</div>
+          <div className="flex items-center space-x-6 space-x-reverse">
+            <span className="text-[ink-black]">סך הכנסות: ₪{totals.income.toLocaleString()}</span>
+            <span className="text-[#CF4500]">סך הוצאות: ₪{totals.expense.toLocaleString()}</span>
+            <span className="text-[ink-black]">מאזן נקי: ₪{totals.net.toLocaleString()}</span>
+          </div>
+        </div>
+      </Card>
+
+      {/* Transaction Form Dialog */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span>{editingTransactionId ? 'עריכת תנועה כספית' : 'רישום תנועה כספית חדשה'}</span>
+            </DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+            {/* Type Toggle */}
+            <div className="flex bg-[#F3F0EE] p-1 rounded-xl border border-[#141413]/10">
               <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 transition-colors bg-zinc-800/60 hover:bg-zinc-800"
+                type="button"
+                onClick={() => setType('Income')}
+                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                  type === 'Income' ? 'bg-[#141413] text-white shadow-sm' : 'text-[#475569] hover:text-[#141413]'
+                }`}
               >
-                <X className="w-4 h-4" />
+                הכנסה (+)
+              </button>
+              <button
+                type="button"
+                onClick={() => setType('Expense')}
+                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                  type === 'Expense' ? 'bg-[#CF4500] text-white shadow-sm' : 'text-[#475569] hover:text-[#141413]'
+                }`}
+              >
+                הוצאה (-)
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {modalError && (
-                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium">
-                  {modalError}
-                </div>
-              )}
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-[11px] font-medium text-zinc-400 mb-1">סוג תנועה</label>
-                  <select
-                    value={type}
-                    onChange={(e) => setType(e.target.value as 'Income' | 'Expense')}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700"
-                  >
-                    <option value="Income">הכנסה</option>
-                    <option value="Expense">הוצאה</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-medium text-zinc-400 mb-1">סכום (₪)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="250.00"
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-medium text-zinc-400 mb-1">תאריך</label>
-                  <input
-                    type="date"
-                    required
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700"
-                  />
-                </div>
-              </div>
-
-              {/* Service Category & Client Section */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[11px] font-medium text-zinc-400 mb-1">
-                    קטגוריית שירות (לפילוח בגרף)
-                  </label>
-                  <select
-                    value={serviceType}
-                    onChange={(e) => setServiceType(e.target.value as any)}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700"
-                  >
-                    <option value="DJ Gig">תקליטנות (DJ)</option>
-                    <option value="Software Development">פיתוח תוכנה</option>
-                    <option value="Maintenance">תחזוקה</option>
-                    <option value="Consulting">ייעוץ</option>
-                    <option value="General">כללי / ללא קטגוריה</option>
-                  </select>
-                </div>
-
-                {/* Client Selector with Quick Add Button */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-[11px] font-medium text-zinc-400">לקוח (אופציונלי)</label>
-                    <button
-                      type="button"
-                      onClick={() => setIsQuickClientOpen(!isQuickClientOpen)}
-                      className="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 hover:underline flex items-center gap-1 transition-colors"
-                    >
-                      <UserPlus className="w-3 h-3" />
-                      <span>{isQuickClientOpen ? 'סגור טופס לקוח' : '+ לקוח חדש'}</span>
-                    </button>
-                  </div>
-                  <select
-                    value={clientId}
-                    onChange={(e) => setClientId(e.target.value)}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700"
-                  >
-                    <option value="">-- ללא לקוח --</option>
-                    {clients.map((c) => (
-                      <option key={c._id} value={c._id}>
-                        {c.name} ({c.type})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Quick Inline Add Client Box */}
-              {isQuickClientOpen && (
-                <div className="bg-zinc-950/80 border border-indigo-500/30 rounded-xl p-4 space-y-3 relative">
-                  <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
-                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                      <UserPlus className="w-3.5 h-3.5 text-indigo-400" />
-                      <span>הוספת לקוח חדש במהירות</span>
-                    </span>
-                    <span className="text-[10px] text-zinc-400">יירשם מיד בספר הלקוחות</span>
-                  </div>
-
-                  {quickClientError && (
-                    <div className="p-2 rounded bg-red-500/10 border border-red-500/20 text-red-400 text-[11px]">
-                      {quickClientError}
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[10px] font-medium text-zinc-400 mb-1">שם הלקוח / עסק *</label>
-                      <input
-                        type="text"
-                        required
-                        value={newClientName}
-                        onChange={(e) => setNewClientName(e.target.value)}
-                        placeholder="מועדון זנית / חברת אקמי"
-                        className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-indigo-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-medium text-zinc-400 mb-1">סוג לקוח</label>
-                      <select
-                        value={newClientType}
-                        onChange={(e) => setNewClientType(e.target.value as any)}
-                        className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-indigo-500"
-                      >
-                        <option value="Club">מועדון</option>
-                        <option value="Producer">מפיק</option>
-                        <option value="Restaurant">מסעדה</option>
-                        <option value="Private">לקוח פרטי</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[10px] font-medium text-zinc-400 mb-1">אימייל (אופציונלי)</label>
-                      <input
-                        type="email"
-                        value={newClientEmail}
-                        onChange={(e) => setNewClientEmail(e.target.value)}
-                        placeholder="info@client.com"
-                        className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-indigo-500 text-left"
-                        dir="ltr"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-medium text-zinc-400 mb-1">טלפון (אופציונלי)</label>
-                      <input
-                        type="text"
-                        value={newClientPhone}
-                        onChange={(e) => setNewClientPhone(e.target.value)}
-                        placeholder="050-0000000"
-                        className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-indigo-500 text-left"
-                        dir="ltr"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end space-x-2 space-x-reverse pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setIsQuickClientOpen(false)}
-                      className="px-2.5 py-1 text-[11px] text-zinc-400 hover:text-zinc-200"
-                    >
-                      ביטול
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleQuickClientSubmit}
-                      disabled={isCreatingClient || !newClientName}
-                      className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-3 py-1 rounded-lg text-[11px] flex items-center gap-1 shadow-sm disabled:opacity-50"
-                    >
-                      <Check className="w-3 h-3" />
-                      <span>{isCreatingClient ? 'יוצר לקוח...' : 'שמור ונבחר לקוח'}</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[11px] font-medium text-zinc-400 mb-1">אירוע מקושר (אופציונלי)</label>
-                <select
-                  value={eventId}
-                  onChange={(e) => handleEventChange(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700"
-                >
-                  <option value="">-- ללא אירוע --</option>
-                  {events.map((ev) => (
-                    <option key={ev._id} value={ev._id}>
-                      {ev.type === 'DJ Gig' ? 'תקליטנות' : ev.type === 'Software Development' ? 'תוכנה' : ev.type} - {new Date(ev.date).toLocaleDateString('he-IL')}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-medium text-zinc-400 mb-1">הערות</label>
-                <textarea
-                  rows={2.5}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="פירוט נוסף או אסמכתא..."
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700"
+                <label className="block text-[11px] font-bold text-[slate-gray] mb-1 uppercase tracking-wider font-heading">סכום (₪)</label>
+                <Input
+                  type="number"
+                  required
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="0.00"
                 />
               </div>
 
-              <FileDropzone selectedFile={file} onFileSelect={setFile} />
+              <div>
+                <label className="block text-[11px] font-bold text-[slate-gray] mb-1 uppercase tracking-wider font-heading">תאריך</label>
+                <Input
+                  type="date"
+                  required
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </div>
+            </div>
 
-              <div className="pt-2 flex justify-end space-x-2 space-x-reverse">
+            {type === 'Income' && (
+              <div>
+                <label className="block text-[11px] font-bold text-[slate-gray] mb-1 uppercase tracking-wider font-heading">סוג שירות</label>
+                <select
+                  value={serviceType}
+                  onChange={(e) => setServiceType(e.target.value as any)}
+                  className="w-full h-10 bg-canvas-cream border border-[ink-black]/15 rounded-xl px-4 py-2 text-xs text-[ink-black] focus:outline-none focus:border-[ink-black] focus:bg-lifted-cream transition-all"
+                >
+                  <option value="DJ Gig">תקליטנות (DJ)</option>
+                  <option value="Software Development">פיתוח תוכנה</option>
+                  <option value="Maintenance">תחזוקה</option>
+                  <option value="Consulting">ייעוץ</option>
+                  <option value="General">כללי</option>
+                </select>
+              </div>
+            )}
+
+            {/* Client Picker with Quick Create Button */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-[11px] font-bold text-[slate-gray] uppercase tracking-wider font-heading">לקוח (אופציונלי)</label>
                 <button
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors"
+                  onClick={() => setIsQuickClientOpen(!isQuickClientOpen)}
+                  className="text-[11px] font-bold text-[#CF4500] hover:underline flex items-center gap-1"
                 >
-                  ביטול
-                </button>
-                <button
-                  type="submit"
-                  disabled={isCreating || isUpdating}
-                  className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold px-5 py-2 rounded-lg shadow-md shadow-indigo-500/20 transition-all text-xs border border-indigo-400/20 disabled:opacity-50"
-                >
-                  {isCreating || isUpdating
-                    ? 'שומר...'
-                    : editingTxId
-                    ? 'עדכן תנועה'
-                    : 'שמור תנועה'}
+                  <Plus className="w-3 h-3" />
+                  <span>הוסף לקוח חדש</span>
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+
+              <select
+                value={clientId}
+                onChange={(e) => setClientId(e.target.value)}
+                className="w-full h-10 bg-canvas-cream border border-[ink-black]/15 rounded-xl px-4 py-2 text-xs text-[ink-black] focus:outline-none focus:border-[ink-black] focus:bg-lifted-cream transition-all"
+              >
+                <option value="">-- ללא לקוח --</option>
+                {clients.map((c) => (
+                  <option key={c._id} value={c._id}>
+                    {c.name} ({c.type})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Quick Client Embedded Panel */}
+            {isQuickClientOpen && (
+              <div className="p-4 rounded-xl bg-canvas-cream border border-[ink-black]/15 space-y-3">
+                <h4 className="text-xs font-bold text-[ink-black] flex items-center gap-1.5 font-heading">
+                  <Users className="w-3.5 h-3.5 text-[#CF4500]" />
+                  <span>הוספת לקוח מהירה</span>
+                </h4>
+
+                {quickClientError && (
+                  <div className="text-[10px] text-[#CF4500] font-semibold">{quickClientError}</div>
+                )}
+
+                <div className="grid grid-cols-2 gap-3">
+                  <Input
+                    type="text"
+                    placeholder="שם הלקוח / העסק"
+                    value={newClientName}
+                    onChange={(e) => setNewClientName(e.target.value)}
+                  />
+                  <select
+                    value={newClientType}
+                    onChange={(e) => setNewClientType(e.target.value as any)}
+                    className="h-10 bg-lifted-cream border border-[ink-black]/15 rounded-xl px-3 text-xs text-[ink-black]"
+                  >
+                    <option value="Club">מועדון</option>
+                    <option value="Producer">מפיק</option>
+                    <option value="Restaurant">מסעדה</option>
+                    <option value="Private">לקוח פרטי</option>
+                  </select>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsQuickClientOpen(false)}
+                  >
+                    ביטול
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleQuickClientSubmit}
+                    disabled={isCreatingClient}
+                  >
+                    {isCreatingClient ? 'יוצר...' : 'שמור לקוח'}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-[11px] font-bold text-[slate-gray] mb-1 uppercase tracking-wider font-heading">קבלה / קובץ אסמכתא</label>
+              <FileDropzone onFileSelect={(file) => setSelectedFile(file)} selectedFile={selectedFile} />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-[slate-gray] mb-1 uppercase tracking-wider font-heading">תיאור / הערות</label>
+              <textarea
+                rows={2}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="פרטים נוספים לגבי התנועה..."
+                className="w-full bg-canvas-cream border border-[ink-black]/15 rounded-xl px-4 py-2 text-xs text-[ink-black] placeholder-slate-gray focus:outline-none focus:border-[ink-black] focus:bg-lifted-cream transition-all"
+              />
+            </div>
+
+            <div className="pt-2 flex justify-end space-x-2 space-x-reverse border-t border-[ink-black]/10">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsModalOpen(false)}
+              >
+                ביטול
+              </Button>
+              <Button
+                type="submit"
+                disabled={isCreating || isUpdating}
+              >
+                {isCreating || isUpdating ? 'שומר...' : editingTransactionId ? 'עדכן תנועה' : 'שמור תנועה'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
+

@@ -9,6 +9,8 @@ export interface IServiceEvent extends Document {
   date: Date;
   description?: string;
   status: EventStatus;
+  amount: number;
+  isPaid: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -39,6 +41,15 @@ const ServiceEventSchema: Schema<IServiceEvent> = new Schema(
       type: String,
       enum: ['Scheduled', 'Completed', 'Cancelled'],
       default: 'Scheduled',
+    },
+    amount: {
+      type: Number,
+      required: [true, 'Event amount is required'],
+      default: 0,
+    },
+    isPaid: {
+      type: Boolean,
+      default: false,
     },
   },
   {

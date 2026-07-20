@@ -9,6 +9,7 @@ export interface IClient extends Document {
     email?: string;
     phone?: string;
   };
+  defaultEventPrice?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +30,10 @@ const ClientSchema: Schema<IClient> = new Schema(
     contactInfo: {
       email: { type: String, trim: true, lowercase: true },
       phone: { type: String, trim: true },
+    },
+    defaultEventPrice: {
+      type: Number,
+      default: 0,
     },
   },
   {
