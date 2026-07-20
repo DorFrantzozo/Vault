@@ -33,9 +33,9 @@ if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
 }
 
 webpush.setVapidDetails(
-  'mailto:admin@finance-ops.local',
-  process.env.VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
+  'mailto:dorfrant3@gmail.com',
+  process.env.VAPID_PUBLIC_KEY!,
+  process.env.VAPID_PRIVATE_KEY!
 );
 
 // Initialize Cron Jobs
