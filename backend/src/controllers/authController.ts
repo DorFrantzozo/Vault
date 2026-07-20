@@ -28,8 +28,8 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
 
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: true, // Required for sameSite: 'none' in cross-site contexts
+      sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -66,8 +66,8 @@ export const register = async (req: Request, res: Response, next: NextFunction):
 
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: true,
+      sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -88,8 +88,8 @@ export const register = async (req: Request, res: Response, next: NextFunction):
 export const logout = (_req: Request, res: Response): void => {
   res.clearCookie(COOKIE_NAME, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure: true,
+    sameSite: 'none',
   });
   res.status(200).json({ status: 'success', message: 'Logged out successfully.' });
 };
