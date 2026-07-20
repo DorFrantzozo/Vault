@@ -7,7 +7,7 @@ export const authApi = baseApi.injectEndpoints({
       query: () => '/auth/me',
       providesTags: ['Auth'],
     }),
-    login: builder.mutation<{ status: string; data: { user: IUser } }, { username: string; password: string }>({
+    login: builder.mutation<{ status: string; data: { user: IUser; token: string } }, { username: string; password: string }>({
       query: (credentials) => ({
         url: '/auth/login',
         method: 'POST',
@@ -15,7 +15,7 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Auth'],
     }),
-    register: builder.mutation<{ status: string; data: { user: IUser } }, { username: string; password: string }>({
+    register: builder.mutation<{ status: string; data: { user: IUser; token: string } }, { username: string; password: string }>({
       query: (credentials) => ({
         url: '/auth/register',
         method: 'POST',

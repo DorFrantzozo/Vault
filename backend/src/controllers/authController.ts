@@ -40,6 +40,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
           _id: user._id,
           username: user.username,
         },
+        token,
       },
     });
   } catch (error) {
@@ -78,6 +79,7 @@ export const register = async (req: Request, res: Response, next: NextFunction):
           _id: user._id,
           username: user.username,
         },
+        token,
       },
     });
   } catch (error) {

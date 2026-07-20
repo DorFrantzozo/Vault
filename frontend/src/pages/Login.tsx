@@ -25,11 +25,11 @@ export default function Login() {
     try {
       if (isRegisterMode) {
         const res = await register({ username, password }).unwrap();
-        dispatch(setCredentials({ user: res.data.user }));
+        dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
         navigate('/dashboard');
       } else {
         const res = await login({ username, password }).unwrap();
-        dispatch(setCredentials({ user: res.data.user }));
+        dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
         navigate('/dashboard');
       }
     } catch (err: any) {

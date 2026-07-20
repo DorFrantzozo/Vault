@@ -4,8 +4,14 @@ import { AppError } from '../utils/AppError.js';
 import { IUserPayload } from '../types/express.js';
 
 export const protect = (req: Request, _res: Response, next: NextFunction): void => {
-  const token = req.cookies?.token;
-  console.log('[Auth Debug] Path:', req.path, '| Cookies received:', Object.keys(req.cookies || {}), '| Has Token:', !!token);
+  let token = req.cookies?.token;
+
+  // Fallback to Authorization Header
+  if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  console.log('[Auth Debug] Path:', req.path, '| Cookies received:', Object.keys(req.cookies || {}), '| Has Auth Header:', !!req.headers.authorization, '| Token Found:', !!token);
 
   if (!token) {
     return next(new AppError('Unauthorized: Access denied. Please log in.', 401));
