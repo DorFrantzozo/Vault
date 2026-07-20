@@ -5,6 +5,7 @@ import { IUserPayload } from '../types/express.js';
 
 export const protect = (req: Request, _res: Response, next: NextFunction): void => {
   const token = req.cookies?.token;
+  console.log('[Auth Debug] Path:', req.path, '| Cookies received:', Object.keys(req.cookies || {}), '| Has Token:', !!token);
 
   if (!token) {
     return next(new AppError('Unauthorized: Access denied. Please log in.', 401));
