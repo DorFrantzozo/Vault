@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Mail, Phone, Building2, X, Users } from 'lucide-react';
+import { Plus, Trash2, Pencil, Mail, Phone, Building2, X, Users } from 'lucide-react';
 import {
   useGetClientsQuery,
   useCreateClientMutation,
+  useUpdateClientMutation,
   useDeleteClientMutation,
 } from '../store/api/clientApi.js';
 import { IClient } from '../types/api.js';
@@ -10,6 +11,7 @@ import { useModal } from '../components/common/ModalContext.js';
 
 export default function Clients() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<IClient | null>(null);
   const [name, setName] = useState('');
   const [type, setType] = useState<IClient['type']>('Club');
   const [email, setEmail] = useState('');
@@ -17,26 +19,51 @@ export default function Clients() {
 
   const { data: clientsData, isLoading } = useGetClientsQuery();
   const [createClient, { isLoading: isCreating }] = useCreateClientMutation();
+  const [updateClient, { isLoading: isUpdating }] = useUpdateClientMutation();
   const [deleteClient] = useDeleteClientMutation();
   const { confirm } = useModal();
 
   const clients = clientsData?.data?.clients || [];
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name) return;
 
     try {
-      await createClient({
-        name,
-        type,
-        contactInfo: { email: email || undefined, phone: phone || undefined },
-      }).unwrap();
+      if (editingClient) {
+        await updateClient({
+          id: editingClient._id,
+          name,
+          type,
+          contactInfo: { email: email || undefined, phone: phone || undefined },
+        }).unwrap();
+      } else {
+        await createClient({
+          name,
+          type,
+          contactInfo: { email: email || undefined, phone: phone || undefined },
+        }).unwrap();
+      }
       setIsModalOpen(false);
       resetForm();
     } catch (err) {
-      console.error('Failed to create client', err);
+      console.error('Failed to save client', err);
     }
+  };
+
+  const openCreateModal = () => {
+    resetForm();
+    setEditingClient(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (client: IClient) => {
+    setName(client.name);
+    setType(client.type);
+    setEmail(client.contactInfo?.email || '');
+    setPhone(client.contactInfo?.phone || '');
+    setEditingClient(client);
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -61,6 +88,7 @@ export default function Clients() {
     setType('Club');
     setEmail('');
     setPhone('');
+    setEditingClient(null);
   };
 
   const getClientTypeHebrew = (t: IClient['type']) => {
@@ -87,7 +115,7 @@ export default function Clients() {
           <p className="text-xs text-zinc-400 mt-0.5">ניהול מועדונים, מפיקים, מסעדות ולקוחות פרטיים</p>
         </div>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={openCreateModal}
           className="flex items-center space-x-1.5 space-x-reverse bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold px-4 py-2 rounded-lg shadow-md shadow-indigo-500/20 transition-all text-xs border border-indigo-400/20 active:scale-95"
         >
           <Plus className="w-4 h-4 stroke-[2.5]" />
@@ -122,13 +150,22 @@ export default function Clients() {
                     </span>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleDelete(c._id)}
-                  className="p-1 rounded-md text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                  title="הסר לקוח"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                <div className="flex items-center space-x-1.5 space-x-reverse">
+                  <button
+                    onClick={() => openEditModal(c)}
+                    className="p-1 rounded-md text-zinc-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
+                    title="ערוך לקוח"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(c._id)}
+                    className="p-1 rounded-md text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    title="הסר לקוח"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-2 pt-3 border-t border-zinc-800/80 text-xs text-zinc-300">
@@ -169,7 +206,9 @@ export default function Clients() {
           />
           <div className="relative z-10 bg-zinc-900 border border-zinc-800 rounded-xl p-6 max-w-md w-full shadow-2xl space-y-4 text-zinc-100">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <h3 className="text-base font-bold text-white">הוספת לקוח חדש</h3>
+              <h3 className="text-base font-bold text-white">
+                {editingClient ? 'עריכת לקוח' : 'הוספת לקוח חדש'}
+              </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="p-1 rounded-lg text-zinc-400 hover:text-zinc-200 transition-colors"
@@ -178,7 +217,7 @@ export default function Clients() {
               </button>
             </div>
 
-            <form onSubmit={handleCreate} className="space-y-3.5">
+            <form onSubmit={handleSubmit} className="space-y-3.5">
               <div>
                 <label className="block text-[11px] font-medium text-zinc-400 mb-1">שם הלקוח / עסק</label>
                 <input
@@ -239,10 +278,10 @@ export default function Clients() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isCreating}
+                  disabled={isCreating || isUpdating}
                   className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold px-4 py-1.5 rounded-lg shadow-md shadow-indigo-500/20 transition-all text-xs border border-indigo-400/20 disabled:opacity-50"
                 >
-                  {isCreating ? 'שומר...' : 'שמור לקוח'}
+                  {isCreating || isUpdating ? 'שומר...' : editingClient ? 'עדכן לקוח' : 'שמור לקוח'}
                 </button>
               </div>
             </form>
