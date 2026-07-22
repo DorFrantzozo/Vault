@@ -20,7 +20,6 @@ import {
 import { useGetEventsQuery } from '../store/api/eventApi.js';
 import {
   useGetUpcomingBillingsQuery,
-  useGetBillingsQuery,
   useCreateBillingMutation,
   useUpdateBillingMutation,
   useDeleteBillingMutation,
@@ -76,7 +75,7 @@ export default function Dashboard() {
   const { data: recentTransData } = useGetTransactionsQuery();
   const { data: eventsData } = useGetEventsQuery();
   const { data: upcomingBillingsData } = useGetUpcomingBillingsQuery();
-  const { data: allBillingsData } = useGetBillingsQuery();
+
   const { data: vapidData } = useGetVapidPublicKeyQuery();
   
   // Mutations
@@ -90,7 +89,7 @@ export default function Dashboard() {
   const allTransactions = recentTransData?.data?.transactions || [];
   const upcomingEvents = eventsData?.data?.events?.slice(0, 5) || [];
   const upcomingBillings = upcomingBillingsData?.data?.billings || [];
-  const allBillings = allBillingsData?.data?.billings || [];
+
 
   const openGigsCount = eventsData?.data?.events?.filter((e: IServiceEvent) => !e.isPaid && (e.amount || 0) > 0).length || 0;
   const openGigsAmount = eventsData?.data?.events?.filter((e: IServiceEvent) => !e.isPaid && (e.amount || 0) > 0).reduce((sum: number, e: IServiceEvent) => sum + (e.amount || 0), 0) || 0;
@@ -190,15 +189,6 @@ export default function Dashboard() {
     setIsBillingModalOpen(true);
   };
 
-  const openEditBillingModal = (billing: IRecurringBilling) => {
-    setEditingBillingId(billing._id);
-    setBClientName(billing.clientName);
-    setBDesc(billing.serviceDescription || '');
-    setBAmount(billing.amount);
-    setBCycle(billing.billingCycle);
-    setBNextDate(new Date(billing.nextBillingDate).toISOString().split('T')[0]);
-    setIsBillingModalOpen(true);
-  };
 
   const saveBilling = async (e: React.FormEvent) => {
     e.preventDefault();
