@@ -6,12 +6,14 @@ import {
   updateBilling,
   deleteBilling,
   markAsPaid,
+  getBillingHistory,
 } from '../controllers/billingController.js';
 
 const router = express.Router();
 
 router.route('/upcoming').get(getUpcomingBillings);
 router.route('/:id/paid').patch(markAsPaid);
+router.route('/:id/history').get(getBillingHistory);
 
 router
   .route('/')

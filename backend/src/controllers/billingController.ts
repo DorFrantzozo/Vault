@@ -1,10 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { RecurringBilling } from '../models/RecurringBilling.js';
+import { Transaction } from '../models/Transaction.js';
 import { AppError } from '../utils/AppError.js';
 
 export const getBillings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const billings = await RecurringBilling.find().sort({ nextBillingDate: 1 });
+    const billings = await RecurringBilling.find().populate('client', 'name type').sort({ nextBillingDate: 1 });
     res.status(200).json({ status: 'success', results: billings.length, data: { billings } });
   } catch (error) {
     next(error);
@@ -79,6 +80,16 @@ export const markAsPaid = async (req: Request, res: Response, next: NextFunction
       return next(new AppError('Billing record not found', 404));
     }
 
+    await Transaction.create({
+      type: 'Income',
+      amount: billing.amount,
+      date: new Date(),
+      client: billing.client || undefined,
+      serviceType: 'Maintenance',
+      relatedBilling: billing._id,
+      notes: `תשלום תקופתי עבור ${billing.serviceDescription || billing.clientName || 'לקוח'}`,
+    });
+
     const nextDate = new Date(billing.nextBillingDate);
     if (billing.billingCycle === 'Monthly') {
       nextDate.setMonth(nextDate.getMonth() + 1);
@@ -90,6 +101,15 @@ export const markAsPaid = async (req: Request, res: Response, next: NextFunction
     await billing.save();
 
     res.status(200).json({ status: 'success', data: { billing } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getBillingHistory = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const transactions = await Transaction.find({ relatedBilling: req.params.id }).populate('client', 'name').sort({ date: -1 });
+    res.status(200).json({ status: 'success', results: transactions.length, data: { transactions } });
   } catch (error) {
     next(error);
   }

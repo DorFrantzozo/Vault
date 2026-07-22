@@ -1,7 +1,8 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema, Types } from 'mongoose';
 
 export interface IRecurringBilling extends Document {
-  clientName: string;
+  client?: Types.ObjectId;
+  clientName?: string;
   serviceDescription: string;
   amount: number;
   billingCycle: 'Monthly' | 'Yearly';
@@ -14,9 +15,13 @@ export interface IRecurringBilling extends Document {
 
 const recurringBillingSchema = new Schema<IRecurringBilling>(
   {
+    client: {
+      type: Schema.Types.ObjectId,
+      ref: 'Client',
+      index: true,
+    },
     clientName: {
       type: String,
-      required: [true, 'Client name is required'],
       trim: true,
     },
     serviceDescription: {

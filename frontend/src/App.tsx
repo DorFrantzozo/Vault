@@ -13,6 +13,7 @@ const Clients = React.lazy(() => import('./pages/Clients.js'));
 const Events = React.lazy(() => import('./pages/Events.js'));
 const Balances = React.lazy(() => import('./pages/Balances.js'));
 const SettingsPage = React.lazy(() => import('./pages/SettingsPage.js'));
+const RecurringBillings = React.lazy(() => import('./pages/RecurringBillings.js'));
 
 import { ModalProvider } from './components/common/ModalContext.js';
 
@@ -40,6 +41,7 @@ export default function App() {
                   <Route path="/clients" element={<Clients />} />
                   <Route path="/events" element={<Events />} />
                   <Route path="/balances" element={<Balances />} />
+                  <Route path="/recurring" element={<RecurringBillings />} />
                   <Route path="/settings" element={<SettingsPage />} />
                 </Route>
               </Route>

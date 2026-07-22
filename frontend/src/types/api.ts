@@ -37,6 +37,7 @@ export interface ITransaction {
   date: string;
   client?: IClient | string;
   relatedEvent?: IServiceEvent | string;
+  relatedBilling?: string;
   attachmentUrl?: string;
   publicId?: string;
   notes?: string;

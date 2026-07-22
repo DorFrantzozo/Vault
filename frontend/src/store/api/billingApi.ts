@@ -2,12 +2,13 @@ import { baseApi } from './baseApi.js';
 
 export interface IRecurringBilling {
   _id: string;
-  clientName: string;
   serviceDescription: string;
   amount: number;
   billingCycle: 'Monthly' | 'Yearly';
   nextBillingDate: string;
   isActive: boolean;
+  client?: { _id: string; name: string };
+  clientName?: string;
 }
 
 export const billingApi = baseApi.injectEndpoints({
@@ -50,6 +51,10 @@ export const billingApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['RecurringBilling'],
     }),
+    getBillingHistory: builder.query<{ status: string; results: number; data: { transactions: any[] } }, string>({
+      query: (id) => `/billing/${id}/history`,
+      providesTags: ['RecurringBilling', 'Transaction'],
+    }),
   }),
 });
 
@@ -60,4 +65,5 @@ export const {
   useUpdateBillingMutation,
   useDeleteBillingMutation,
   useMarkBillingAsPaidMutation,
+  useGetBillingHistoryQuery,
 } = billingApi;

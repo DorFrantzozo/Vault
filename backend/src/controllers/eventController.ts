@@ -74,10 +74,10 @@ export const deleteEvent = async (req: Request, res: Response, next: NextFunctio
 export const markEventsAsPaidForClient = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const clientId = req.params.clientId;
-    const unpaidEvents = await ServiceEvent.find({ client: clientId, isPaid: false });
+    const unpaidEvents = await ServiceEvent.find({ client: clientId, isPaid: false, status: 'Completed' });
 
     if (unpaidEvents.length === 0) {
-      return next(new AppError('No unpaid events found for this client', 400));
+      return next(new AppError('No unpaid completed events found for this client', 400));
     }
 
     const totalAmount = unpaidEvents.reduce((sum, ev) => sum + (ev.amount || 0), 0);
@@ -90,13 +90,13 @@ export const markEventsAsPaidForClient = async (req: Request, res: Response, nex
       date: new Date(),
       client: clientId,
       serviceType: serviceType,
-      notes: `תשלום מרוכז עבור ${unpaidEvents.length} אירועים/עבודות פתוחות`,
+      notes: `תשלום מרוכז עבור ${unpaidEvents.length} עבודות שבוצעו`,
     });
 
-    // 2. Mark all those events as paid and completed
+    // 2. Mark all those events as paid
     await ServiceEvent.updateMany(
-      { client: clientId, isPaid: false },
-      { $set: { isPaid: true, status: 'Completed' } }
+      { client: clientId, isPaid: false, status: 'Completed' },
+      { $set: { isPaid: true } }
     );
 
     res.status(200).json({

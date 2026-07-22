@@ -204,16 +204,16 @@ export default function SettingsPage() {
                     onClick={() => setRemindersPerDay(1)}
                     className={`flex items-center justify-between p-4 rounded-xl border text-right transition-all ${
                       remindersPerDay === 1
-                        ? 'bg-[ink-black] border-[ink-black] text-white shadow-xs'
-                        : 'bg-lifted-cream border-[ink-black]/15 text-[ink-black] hover:border-[ink-black]/40'
+                        ? 'bg-ink-black border-ink-black text-white shadow-xs'
+                        : 'bg-lifted-cream border-ink-black/15 text-ink-black hover:border-ink-black/40'
                     }`}
                   >
                     <div>
                       <div className="text-xs font-bold font-heading">פעם אחת ביום (1)</div>
-                      <div className={`text-[10px] mt-0.5 ${remindersPerDay === 1 ? 'text-[#D1CDC7]' : 'text-[slate-gray]'}`}>התראה יומית בשעה 08:00</div>
+                      <div className={`text-[10px] mt-0.5 ${remindersPerDay === 1 ? 'text-[#D1CDC7]' : 'text-slate-gray'}`}>התראה יומית בשעה 08:00</div>
                     </div>
                     {remindersPerDay === 1 && (
-                      <div className="w-5 h-5 rounded-full bg-lifted-cream text-[ink-black] flex items-center justify-center">
+                      <div className="w-5 h-5 rounded-full bg-lifted-cream text-ink-black flex items-center justify-center">
                         <Check className="w-3 h-3 stroke-[3]" />
                       </div>
                     )}
@@ -224,16 +224,16 @@ export default function SettingsPage() {
                     onClick={() => setRemindersPerDay(2)}
                     className={`flex items-center justify-between p-4 rounded-xl border text-right transition-all ${
                       remindersPerDay === 2
-                        ? 'bg-[ink-black] border-[ink-black] text-white shadow-xs'
-                        : 'bg-lifted-cream border-[ink-black]/15 text-[ink-black] hover:border-[ink-black]/40'
+                        ? 'bg-ink-black border-ink-black text-white shadow-xs'
+                        : 'bg-lifted-cream border-ink-black/15 text-ink-black hover:border-ink-black/40'
                     }`}
                   >
                     <div>
                       <div className="text-xs font-bold font-heading">פעמיים ביום (2)</div>
-                      <div className={`text-[10px] mt-0.5 ${remindersPerDay === 2 ? 'text-[#D1CDC7]' : 'text-[slate-gray]'}`}>כל 12 שעות (בוקר וערב)</div>
+                      <div className={`text-[10px] mt-0.5 ${remindersPerDay === 2 ? 'text-[#D1CDC7]' : 'text-slate-gray'}`}>כל 12 שעות (בוקר וערב)</div>
                     </div>
                     {remindersPerDay === 2 && (
-                      <div className="w-5 h-5 rounded-full bg-lifted-cream text-[ink-black] flex items-center justify-center">
+                      <div className="w-5 h-5 rounded-full bg-lifted-cream text-ink-black flex items-center justify-center">
                         <Check className="w-3 h-3 stroke-[3]" />
                       </div>
                     )}
@@ -249,20 +249,20 @@ export default function SettingsPage() {
                   <Smartphone className="w-4 h-4 text-[ink-black]" />
                   <span>חיבור מכשיר זה להתראות פוש (PWA)</span>
                 </label>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-canvas-cream/60 border border-[ink-black]/10">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-canvas-cream/60 border border-ink-black/10">
                   <div>
-                    <div className="text-xs font-medium text-[ink-black] flex items-center gap-2">
+                    <div className="text-xs font-medium text-ink-black flex items-center gap-2">
                       <span>סטטוס דפדפן:</span>
                       <Badge variant={pushStatus === 'granted' ? 'default' : 'destructive'}>
                         {pushStatus === 'granted' ? 'פעיל ומורשה' : pushStatus === 'denied' ? 'חסום' : 'טרם אושר'}
                       </Badge>
                     </div>
-                    <p className="text-[10px] text-[slate-gray] mt-1">
+                    <p className="text-[10px] text-slate-gray mt-1">
                       מכשירים רשומים במערכת: {settingsData?.data?.activeSubscriptionsCount ?? 0}
                     </p>
                   </div>
 
-                  <div className="flex items-center space-x-2 space-x-reverse">
+                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                     {pushStatus === 'granted' && (
                       <Button
                         type="button"
@@ -270,6 +270,7 @@ export default function SettingsPage() {
                         size="sm"
                         onClick={handleSendTestPush}
                         disabled={isTesting || testCountdown !== null}
+                        className="w-full sm:w-auto justify-center"
                       >
                         <RefreshCw className={`w-3.5 h-3.5 ml-1 ${isTesting || testCountdown !== null ? 'animate-spin' : ''}`} />
                         <span>
@@ -288,6 +289,7 @@ export default function SettingsPage() {
                       size="sm"
                       onClick={handleEnablePushNotifications}
                       disabled={isSubscribing}
+                      className="w-full sm:w-auto justify-center"
                     >
                       <BellRing className="w-3.5 h-3.5 text-white ml-1.5" />
                       <span>{isSubscribing ? 'רושם מכשיר...' : 'הפעל התראות במכשיר זה'}</span>

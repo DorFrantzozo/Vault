@@ -12,6 +12,7 @@ import {
   Sparkles,
   Briefcase,
   User,
+  CreditCard,
 } from "lucide-react";
 import {useLogoutMutation} from "../../store/api/authApi.js";
 import {useDispatch, useSelector} from "react-redux";
@@ -44,6 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const mainMenu = [
     {name: "לוח בקרה", path: "/dashboard", icon: LayoutDashboard},
     {name: "אירועים ותפעול", path: "/events", icon: Calendar},
+    {name: "חיובים קבועים", path: "/recurring", icon: CreditCard},
     {name: "ספר תנועות", path: "/ledger", icon: Receipt},
     {name: "לקוחות", path: "/clients", icon: Users},
     {name: "לוח שנה", path: "/calendar", icon: CalendarDays},

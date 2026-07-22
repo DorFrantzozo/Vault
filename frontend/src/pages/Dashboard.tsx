@@ -452,13 +452,10 @@ export default function Dashboard() {
               <CreditCard className="w-4.5 h-4.5 text-ink-black" />
               <span>חיובים קרובים (5 ימים)</span>
             </CardTitle>
-            <button onClick={() => {
-                if (allBillings.length > 0) openEditBillingModal(allBillings[0]);
-                else openNewBillingModal();
-              }} className="text-xs text-slate-gray hover:text-ink-black flex items-center space-x-1 space-x-reverse transition-colors font-semibold">
+            <Link to="/recurring" className="text-xs text-slate-gray hover:text-ink-black flex items-center space-x-1 space-x-reverse transition-colors font-semibold">
               <span>ניהול חיובים</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
-            </button>
+            </Link>
           </CardHeader>
 
           <CardContent className="pt-4">

@@ -10,6 +10,7 @@ export interface ITransaction extends Document {
   date: Date;
   client?: Types.ObjectId;
   relatedEvent?: Types.ObjectId;
+  relatedBilling?: Types.ObjectId;
   attachmentUrl?: string;
   publicId?: string;
   notes?: string;
@@ -49,6 +50,10 @@ const TransactionSchema: Schema<ITransaction> = new Schema(
     relatedEvent: {
       type: Schema.Types.ObjectId,
       ref: 'ServiceEvent',
+    },
+    relatedBilling: {
+      type: Schema.Types.ObjectId,
+      ref: 'RecurringBilling',
     },
     attachmentUrl: {
       type: String,

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Briefcase, CreditCard, CheckCircle2, Pencil, Trash2, X } from 'lucide-react';
-import { useGetEventsQuery, useMarkClientEventsAsPaidMutation, useDeleteEventMutation } from '../store/api/eventApi.js';
+import { Briefcase, CreditCard, CheckCircle2, Circle, Pencil, Trash2, X } from 'lucide-react';
+import { useGetEventsQuery, useMarkClientEventsAsPaidMutation, useDeleteEventMutation, useUpdateEventMutation } from '../store/api/eventApi.js';
 import { useGetClientsQuery } from '../store/api/clientApi.js';
 import { IServiceEvent } from '../types/api.js';
 import { useModal } from '../components/common/ModalContext.js';
@@ -15,12 +15,13 @@ export default function Balances() {
   const { isLoading: isLoadingClients } = useGetClientsQuery();
   const [markPaid, { isLoading: isMarking }] = useMarkClientEventsAsPaidMutation();
   const [deleteEvent, { isLoading: isDeleting }] = useDeleteEventMutation();
+  const [updateEvent, { isLoading: isUpdating }] = useUpdateEventMutation();
 
   const events = eventsData?.data?.events || [];
   const isLoading = isLoadingEvents || isLoadingClients;
 
   const openBalances = useMemo(() => {
-    const balances = new Map<string, { clientName: string; totalAmount: number; events: IServiceEvent[] }>();
+    const balances = new Map<string, { clientName: string; totalAmount: number; completedCount: number; events: IServiceEvent[] }>();
 
     events.forEach(ev => {
       if (!ev.isPaid && ev.amount > 0) {
@@ -28,11 +29,14 @@ export default function Balances() {
         const clientName = typeof ev.client === 'object' ? ev.client.name : 'לקוח לא ידוע';
         
         if (!balances.has(clientId)) {
-          balances.set(clientId, { clientName, totalAmount: 0, events: [] });
+          balances.set(clientId, { clientName, totalAmount: 0, completedCount: 0, events: [] });
         }
         
         const clientData = balances.get(clientId)!;
-        clientData.totalAmount += ev.amount;
+        if (ev.status === 'Completed') {
+          clientData.totalAmount += ev.amount;
+          clientData.completedCount += 1;
+        }
         clientData.events.push(ev);
       }
     });
@@ -42,6 +46,15 @@ export default function Balances() {
       ...data,
     })).sort((a, b) => b.totalAmount - a.totalAmount);
   }, [events]);
+
+  const handleToggleEventStatus = async (ev: IServiceEvent) => {
+    try {
+      const newStatus = ev.status === 'Completed' ? 'Scheduled' : 'Completed';
+      await updateEvent({ id: ev._id, status: newStatus }).unwrap();
+    } catch (err: any) {
+      showAlert('שגיאה', err?.data?.message || 'שגיאה בעדכון סטטוס העבודה.', 'danger');
+    }
+  };
 
   const handleMarkPaid = async (clientId: string, clientName: string, totalAmount: number) => {
     const isConfirmed = await confirm({
@@ -133,9 +146,25 @@ export default function Balances() {
                   {b.events.map(ev => (
                     <div key={ev._id} className="flex justify-between items-center text-xs p-2.5 rounded-xl bg-canvas-cream/40 border border-ink-black/10">
                       <div className="flex-1 flex items-center pr-1">
-                        <span className="font-bold text-ink-black">{new Date(ev.date).toLocaleDateString('he-IL')}</span>
+                        <button 
+                          onClick={() => handleToggleEventStatus(ev)}
+                          disabled={isUpdating}
+                          className="flex items-center justify-center p-1 rounded-full transition-colors hover:bg-black/5 ml-2 cursor-pointer focus:outline-none"
+                          title={ev.status === 'Completed' ? 'סמן כמתוכנן' : 'סמן כבוצע'}
+                        >
+                          {ev.status === 'Completed' ? (
+                            <CheckCircle2 className="w-5 h-5 text-green-600" />
+                          ) : (
+                            <Circle className="w-5 h-5 text-slate-gray opacity-50" />
+                          )}
+                        </button>
+                        <span className={`font-bold transition-colors ${ev.status === 'Completed' ? 'text-ink-black' : 'text-slate-gray'}`}>
+                          {new Date(ev.date).toLocaleDateString('he-IL')}
+                        </span>
                         <span className="text-slate-gray mx-2">•</span>
-                        <span className="text-slate-gray truncate max-w-[120px] inline-block align-bottom">{ev.description || ev.type}</span>
+                        <span className={`text-slate-gray truncate max-w-[120px] inline-block align-bottom ${ev.status !== 'Completed' && 'opacity-60'}`}>
+                          {ev.description || ev.type}
+                        </span>
                       </div>
                       <div className="flex items-center space-x-2 space-x-reverse">
                         <span className="font-bold text-ink-black">₪{ev.amount.toLocaleString()}</span>
@@ -161,10 +190,10 @@ export default function Balances() {
                     variant="default"
                     className="w-full"
                     onClick={() => handleMarkPaid(b.clientId, b.clientName, b.totalAmount)}
-                    disabled={isMarking}
+                    disabled={isMarking || b.completedCount === 0}
                   >
                     <CreditCard className="w-4 h-4 ml-1.5" />
-                    <span>גבה תשלום מרוכז</span>
+                    <span>{b.completedCount > 0 ? `גבה תשלום על ${b.completedCount} עבודות` : 'אין עבודות לגבייה'}</span>
                   </Button>
                 </div>
               </div>
