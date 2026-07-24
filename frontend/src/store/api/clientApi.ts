@@ -9,7 +9,7 @@ export const clientApi = baseApi.injectEndpoints({
     }),
     createClient: builder.mutation<
       { status: string; data: { client: IClient } },
-      { name: string; type: IClient['type']; contactInfo?: { email?: string; phone?: string } }
+      { name: string; type: IClient['type']; contactInfo?: { email?: string; phone?: string }; color?: IClient['color'] }
     >({
       query: (body) => ({
         url: '/clients',
@@ -20,7 +20,7 @@ export const clientApi = baseApi.injectEndpoints({
     }),
     updateClient: builder.mutation<
       { status: string; data: { client: IClient } },
-      { id: string; name?: string; type?: IClient['type']; contactInfo?: { email?: string; phone?: string } }
+      { id: string; name?: string; type?: IClient['type']; contactInfo?: { email?: string; phone?: string }; color?: IClient['color'] }
     >({
       query: ({ id, ...body }) => ({
         url: `/clients/${id}`,

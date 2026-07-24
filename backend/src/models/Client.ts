@@ -10,6 +10,7 @@ export interface IClient extends Document {
     phone?: string;
   };
   defaultEventPrice?: number;
+  color?: 'indigo' | 'sky' | 'amber' | 'emerald' | 'rose' | 'slate';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,6 +35,11 @@ const ClientSchema: Schema<IClient> = new Schema(
     defaultEventPrice: {
       type: Number,
       default: 0,
+    },
+    color: {
+      type: String,
+      enum: ['indigo', 'sky', 'amber', 'emerald', 'rose', 'slate'],
+      default: 'slate',
     },
   },
   {

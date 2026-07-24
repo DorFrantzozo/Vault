@@ -28,6 +28,7 @@ export default function Clients() {
   const [type, setType] = useState<IClient['type']>('Club');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [color, setColor] = useState<IClient['color']>('slate');
 
   const { data: clientsData, isLoading } = useGetClientsQuery();
   const [createClient, { isLoading: isCreating }] = useCreateClientMutation();
@@ -36,6 +37,15 @@ export default function Clients() {
   const { confirm } = useModal();
 
   const clients = clientsData?.data?.clients || [];
+
+  const colorMap: Record<string, string> = {
+    indigo: 'bg-violet-50 text-violet-800 border-violet-200',
+    sky: 'bg-sky-50 text-sky-800 border-sky-200',
+    amber: 'bg-amber-50 text-amber-800 border-amber-200',
+    emerald: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+    rose: 'bg-rose-50 text-rose-800 border-rose-200',
+    slate: 'bg-slate-50 text-slate-800 border-slate-200',
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,12 +58,14 @@ export default function Clients() {
           name,
           type,
           contactInfo: { email: email || undefined, phone: phone || undefined },
+          color,
         }).unwrap();
       } else {
         await createClient({
           name,
           type,
           contactInfo: { email: email || undefined, phone: phone || undefined },
+          color,
         }).unwrap();
       }
       setIsModalOpen(false);
@@ -74,6 +86,7 @@ export default function Clients() {
     setType(client.type);
     setEmail(client.contactInfo?.email || '');
     setPhone(client.contactInfo?.phone || '');
+    setColor(client.color || 'slate');
     setEditingClient(client);
     setIsModalOpen(true);
   };
@@ -100,6 +113,7 @@ export default function Clients() {
     setType('Club');
     setEmail('');
     setPhone('');
+    setColor('slate');
     setEditingClient(null);
   };
 
@@ -157,8 +171,8 @@ export default function Clients() {
                 <div className="space-y-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center space-x-3 space-x-reverse">
-                      <div className="p-3 bg-canvas-cream text-[ink-black] rounded-xl border border-[ink-black]/10">
-                        <Building2 className="w-5 h-5 text-[ink-black]" />
+                      <div className={`p-3 rounded-xl border ${c.color ? colorMap[c.color] : 'bg-canvas-cream text-[ink-black] border-[ink-black]/10'}`}>
+                        <Building2 className="w-5 h-5" />
                       </div>
                       <div>
                         <h3 className="font-bold text-[ink-black] text-sm font-heading">{c.name}</h3>
@@ -252,6 +266,32 @@ export default function Clients() {
                 <option value="Restaurant">מסעדה</option>
                 <option value="Private">לקוח פרטי</option>
               </select>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-[slate-gray] mb-1.5 uppercase tracking-wider font-heading">צבע לקוח (ללוח השנה)</label>
+              <div className="flex items-center gap-2">
+                {(['indigo', 'sky', 'amber', 'emerald', 'rose', 'slate'] as const).map((c) => {
+                  const circleColors: Record<string, string> = {
+                    indigo: 'bg-violet-400',
+                    sky: 'bg-sky-400',
+                    amber: 'bg-amber-400',
+                    emerald: 'bg-emerald-400',
+                    rose: 'bg-rose-400',
+                    slate: 'bg-slate-400',
+                  };
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setColor(c)}
+                      className={`w-7 h-7 rounded-full ${circleColors[c]} transition-all transform hover:scale-110 ${
+                        color === c ? 'ring-2 ring-offset-2 ring-gray-800 scale-110' : 'opacity-80'
+                      }`}
+                    />
+                  );
+                })}
+              </div>
             </div>
 
             <div>

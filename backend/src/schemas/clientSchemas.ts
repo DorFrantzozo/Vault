@@ -11,6 +11,7 @@ export const createClientSchema = z.object({
       })
       .optional(),
     defaultEventPrice: z.number().optional(),
+    color: z.enum(['indigo', 'sky', 'amber', 'emerald', 'rose', 'slate']).optional(),
   }),
 });
 
@@ -28,5 +29,6 @@ export const updateClientSchema = z.object({
       })
       .optional(),
     defaultEventPrice: z.number().optional(),
+    color: z.enum(['indigo', 'sky', 'amber', 'emerald', 'rose', 'slate']).optional(),
   }),
 });

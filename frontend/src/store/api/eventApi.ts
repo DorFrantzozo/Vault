@@ -30,6 +30,24 @@ export const eventApi = baseApi.injectEndpoints({
         method: 'PUT',
         body,
       }),
+      async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          eventApi.util.updateQueryData('getEvents', undefined, (draft) => {
+            const eventIndex = draft.data.events.findIndex((e) => e._id === id);
+            if (eventIndex !== -1) {
+              draft.data.events[eventIndex] = {
+                ...draft.data.events[eventIndex],
+                ...patch,
+              } as IServiceEvent;
+            }
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
       invalidatesTags: ['ServiceEvent'],
     }),
     deleteEvent: builder.mutation<void, string>({
@@ -37,15 +55,28 @@ export const eventApi = baseApi.injectEndpoints({
         url: `/events/${id}`,
         method: 'DELETE',
       }),
+      async onQueryStarted(id, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          eventApi.util.updateQueryData('getEvents', undefined, (draft) => {
+            draft.data.events = draft.data.events.filter((e) => e._id !== id);
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
       invalidatesTags: ['ServiceEvent'],
     }),
     markClientEventsAsPaid: builder.mutation<
       { status: string; message: string; data: { eventsUpdated: number; totalAmount: number } },
-      string
+      { clientId: string; eventIds?: string[] }
     >({
-      query: (clientId) => ({
+      query: ({ clientId, eventIds }) => ({
         url: `/events/client/${clientId}/mark-paid`,
         method: 'POST',
+        body: eventIds ? { eventIds } : undefined,
       }),
       invalidatesTags: ['ServiceEvent', 'Transaction'],
     }),

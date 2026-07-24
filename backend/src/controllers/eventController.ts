@@ -12,7 +12,7 @@ export const getEvents = async (req: Request, res: Response, next: NextFunction)
     if (status) filter.status = status;
 
     const events = await ServiceEvent.find(filter)
-      .populate('client', 'name type contactInfo')
+      .populate('client', 'name type contactInfo color')
       .sort({ date: -1 });
 
     res.status(200).json({ status: 'success', results: events.length, data: { events } });
@@ -23,7 +23,7 @@ export const getEvents = async (req: Request, res: Response, next: NextFunction)
 
 export const getEventById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const event = await ServiceEvent.findById(req.params.id).populate('client', 'name type contactInfo');
+    const event = await ServiceEvent.findById(req.params.id).populate('client', 'name type contactInfo color');
     if (!event) {
       return next(new AppError('Service event not found', 404));
     }
@@ -36,7 +36,7 @@ export const getEventById = async (req: Request, res: Response, next: NextFuncti
 export const createEvent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const event = await ServiceEvent.create(req.body);
-    const populatedEvent = await event.populate('client', 'name type');
+    const populatedEvent = await event.populate('client', 'name type color');
     res.status(201).json({ status: 'success', data: { event: populatedEvent } });
   } catch (error) {
     next(error);
@@ -48,7 +48,7 @@ export const updateEvent = async (req: Request, res: Response, next: NextFunctio
     const event = await ServiceEvent.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
-    }).populate('client', 'name type');
+    }).populate('client', 'name type color');
 
     if (!event) {
       return next(new AppError('Service event not found', 404));
@@ -74,10 +74,19 @@ export const deleteEvent = async (req: Request, res: Response, next: NextFunctio
 export const markEventsAsPaidForClient = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const clientId = req.params.clientId;
-    const unpaidEvents = await ServiceEvent.find({ client: clientId, isPaid: false, status: 'Completed' });
+    const { eventIds } = req.body || {};
+    
+    let query: any = { client: clientId, isPaid: false, status: 'Completed' };
+    
+    // If specific event IDs are provided, filter by them
+    if (eventIds && Array.isArray(eventIds) && eventIds.length > 0) {
+      query._id = { $in: eventIds };
+    }
+
+    const unpaidEvents = await ServiceEvent.find(query);
 
     if (unpaidEvents.length === 0) {
-      return next(new AppError('No unpaid completed events found for this client', 400));
+      return next(new AppError('No unpaid completed events found for this selection', 400));
     }
 
     const totalAmount = unpaidEvents.reduce((sum, ev) => sum + (ev.amount || 0), 0);
@@ -95,7 +104,7 @@ export const markEventsAsPaidForClient = async (req: Request, res: Response, nex
 
     // 2. Mark all those events as paid
     await ServiceEvent.updateMany(
-      { client: clientId, isPaid: false, status: 'Completed' },
+      query,
       { $set: { isPaid: true } }
     );
 

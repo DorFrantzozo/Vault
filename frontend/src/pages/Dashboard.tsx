@@ -87,7 +87,19 @@ export default function Dashboard() {
 
   const summary = summaryData?.data?.summary;
   const allTransactions = recentTransData?.data?.transactions || [];
-  const upcomingEvents = eventsData?.data?.events?.slice(0, 5) || [];
+  
+  const upcomingEvents = useMemo(() => {
+    const rawEvents = eventsData?.data?.events || [];
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    return rawEvents
+      .filter((e: IServiceEvent) => new Date(e.date) >= todayStart)
+      .slice()
+      .sort((a: IServiceEvent, b: IServiceEvent) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(0, 5);
+  }, [eventsData]);
+
   const upcomingBillings = upcomingBillingsData?.data?.billings || [];
 
 
@@ -507,10 +519,10 @@ export default function Dashboard() {
                   <div key={evt._id} className="flex items-center justify-between p-4 rounded-xl bg-white border border-ink-black/10 hover:border-ink-black/30 transition-all shadow-xs">
                     <div>
                       <h4 className="text-xs font-bold text-ink-black">
-                        {evt.type === 'DJ Gig' ? 'אירוע תקליטנות' : evt.type === 'Software Development' ? 'פיתוח תוכנה' : 'תחזוקה וייעוץ'}
+                        {evt.type === 'DJ Gig' ? 'תקליטנות (DJ)' : evt.type === 'Software Development' ? 'פיתוח תוכנה' : evt.type === 'Maintenance' ? 'תחזוקה' : evt.type === 'Consulting' ? 'ייעוץ' : evt.type}
                       </h4>
                       <p className="text-[11px] text-slate-gray mt-0.5">
-                        {typeof evt.client === 'object' ? evt.client.name : 'לקוח כללי'}
+                        לתאריך: {new Date(evt.date).toLocaleDateString('he-IL')} • {typeof evt.client === 'object' ? evt.client.name : 'לקוח כללי'}
                       </p>
                     </div>
                     <Badge variant={evt.status === 'Scheduled' ? 'dark' as any : 'secondary'}>

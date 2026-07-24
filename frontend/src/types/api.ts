@@ -12,6 +12,7 @@ export interface IClient {
     phone?: string;
   };
   defaultEventPrice?: number;
+  color?: 'indigo' | 'sky' | 'amber' | 'emerald' | 'rose' | 'slate';
   createdAt: string;
   updatedAt: string;
 }
