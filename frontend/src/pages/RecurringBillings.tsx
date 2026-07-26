@@ -229,7 +229,7 @@ export default function RecurringBillings() {
                 </div>
 
                 <div className="flex items-center space-x-2 space-x-reverse pt-2">
-                  <Button variant="default" className="flex-1 bg-[ink-black] hover:bg-[ink-black]/90 text-white" onClick={() => handleMarkAsPaid(b._id)}>
+                  <Button variant="default" className="flex-1 bg-ink-black hover:bg-ink-black/90 text-white" onClick={() => handleMarkAsPaid(b._id)}>
                     <CheckCircle className="w-4 h-4 ml-2" />
                     סמן ששולם
                   </Button>

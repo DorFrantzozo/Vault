@@ -76,33 +76,39 @@ export const markEventsAsPaidForClient = async (req: Request, res: Response, nex
     const clientId = req.params.clientId;
     const { eventIds } = req.body || {};
     
-    let query: any = { client: clientId, isPaid: false, status: 'Completed' };
-    
-    // If specific event IDs are provided, filter by them
-    if (eventIds && Array.isArray(eventIds) && eventIds.length > 0) {
-      query._id = { $in: eventIds };
+    // Ensure eventIds is an array and not empty, to strictly only collect selected events
+    if (!eventIds || !Array.isArray(eventIds) || eventIds.length === 0) {
+      return next(new AppError('No specific events selected for collection', 400));
     }
+
+    const query = { 
+      client: clientId, 
+      isPaid: false, 
+      _id: { $in: eventIds } 
+    };
 
     const unpaidEvents = await ServiceEvent.find(query);
 
     if (unpaidEvents.length === 0) {
-      return next(new AppError('No unpaid completed events found for this selection', 400));
+      return next(new AppError('No valid unpaid events found for this selection', 400));
     }
 
     const totalAmount = unpaidEvents.reduce((sum, ev) => sum + (ev.amount || 0), 0);
-    const serviceType = unpaidEvents[0].type || 'General';
 
-    // 1. Create a transaction for the total amount
-    await Transaction.create({
+    // 1. Create individual transactions for each event using its specific event date to allocate income to the correct month
+    const transactionsData = unpaidEvents.map(ev => ({
       type: 'Income',
-      amount: totalAmount,
-      date: new Date(),
+      amount: ev.amount,
+      date: ev.date,
       client: clientId,
-      serviceType: serviceType,
-      notes: `תשלום מרוכז עבור ${unpaidEvents.length} עבודות שבוצעו`,
-    });
+      serviceType: ev.type || 'General',
+      relatedEvent: ev._id,
+      notes: `גביית תשלום עבור ${ev.description || ev.type || 'עבודה'} מיום ${new Date(ev.date).toLocaleDateString('he-IL')}`,
+    }));
 
-    // 2. Mark all those events as paid
+    await Transaction.insertMany(transactionsData);
+
+    // 2. Mark specifically these events as paid
     await ServiceEvent.updateMany(
       query,
       { $set: { isPaid: true } }
