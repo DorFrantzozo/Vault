@@ -19,7 +19,7 @@ export const Navbar: React.FC<NavbarProps> = ({ setMobileOpen }) => {
   });
 
   return (
-    <header className="sticky top-3 z-20 mx-3 md:mx-8 my-2 bg-lifted-cream/95 backdrop-blur-md border border-ink-black/10 rounded-2xl px-4 md:px-6 py-2.5 flex items-center justify-between shadow-[0_4px_20px_rgba(0,0,0,0.03)] gap-3 md:gap-6">
+    <header className="sticky top-3 z-20 mx-3 md:mx-8 my-2 bg-lifted-cream/95 backdrop-blur-md border border-dust-taupe rounded-full px-4 md:px-6 py-2.5 flex items-center justify-between shadow-[0_4px_24px_rgba(0,0,0,0.04)] gap-3 md:gap-6">
       {/* Mobile Expanded Search Bar Overlay */}
       <AnimatePresence>
         {isMobileSearchOpen ? (
@@ -57,7 +57,7 @@ export const Navbar: React.FC<NavbarProps> = ({ setMobileOpen }) => {
                 variant="dark"
                 size="icon"
                 onClick={() => setMobileOpen(true)}
-                className="md:hidden shrink-0 rounded-xl"
+                className="md:hidden shrink-0"
                 aria-label="פתח תפריט"
               >
                 <Menu className="w-4.5 h-4.5" />
@@ -68,7 +68,7 @@ export const Navbar: React.FC<NavbarProps> = ({ setMobileOpen }) => {
                 variant="outline"
                 size="icon"
                 onClick={() => setIsMobileSearchOpen(true)}
-                className="sm:hidden bg-canvas-cream border-ink-black/10 rounded-xl shrink-0"
+                className="sm:hidden bg-canvas-cream border-dust-taupe shrink-0"
               >
                 <Search className="w-4 h-4 text-slate-gray" />
               </Button>
@@ -81,7 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({ setMobileOpen }) => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="חיפוש במערכת..."
-                  className="pr-11 pl-4 rounded-xl text-ink-black placeholder:text-slate-gray"
+                  className="pr-11 pl-4 rounded-full text-ink-black placeholder:text-slate-gray"
                 />
               </div>
             </div>
@@ -92,10 +92,10 @@ export const Navbar: React.FC<NavbarProps> = ({ setMobileOpen }) => {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="relative bg-canvas-cream border-ink-black/10 hover:bg-ink-black hover:text-canvas-cream rounded-xl h-9 w-9"
+                  className="relative bg-canvas-cream border-dust-taupe hover:bg-ink-black hover:text-canvas-cream h-9 w-9"
                 >
                   <Bell className="w-4 h-4" />
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#CF4500] rounded-full ring-2 ring-lifted-cream" />
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full ring-2 ring-lifted-cream" />
                 </Button>
               </motion.div>
 
@@ -103,14 +103,14 @@ export const Navbar: React.FC<NavbarProps> = ({ setMobileOpen }) => {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="bg-canvas-cream border-ink-black/10 hover:bg-ink-black hover:text-canvas-cream rounded-xl h-9 w-9"
+                  className="bg-canvas-cream border-dust-taupe hover:bg-ink-black hover:text-canvas-cream h-9 w-9"
                 >
                   <Moon className="w-4 h-4" />
                 </Button>
               </motion.div>
 
-              <div className="hidden md:flex items-center space-x-2 space-x-reverse px-3.5 py-1.5 h-9 rounded-xl bg-canvas-cream border border-ink-black/10 text-ink-black text-xs font-semibold whitespace-nowrap shrink-0 shadow-xs">
-                <CalendarIcon className="w-3.5 h-3.5 text-[#CF4500] shrink-0" />
+              <div className="hidden md:flex items-center space-x-2 space-x-reverse px-3.5 py-1.5 h-9 rounded-full bg-canvas-cream border border-dust-taupe text-ink-black text-xs font-semibold whitespace-nowrap shrink-0 shadow-xs">
+                <CalendarIcon className="w-3.5 h-3.5 text-ink-black shrink-0" />
                 <span>{formattedDate}</span>
               </div>
             </div>

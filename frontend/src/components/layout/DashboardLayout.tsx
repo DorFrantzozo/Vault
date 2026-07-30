@@ -7,7 +7,7 @@ export const DashboardLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-canvas-cream text-ink-black flex font-sans selection:bg-light-signal-orange selection:text-white">
+    <div className="min-h-screen bg-canvas-cream text-ink-black flex font-sans selection:bg-ink-black selection:text-canvas-cream">
       <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
 
       <div className="flex-1 flex flex-col md:pr-64 min-w-0">

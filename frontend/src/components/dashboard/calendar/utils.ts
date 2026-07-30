@@ -107,11 +107,11 @@ export const getModernEventStyle = (type: IServiceEvent['type'], status: IServic
   let style = "rounded-xl text-xs p-2 transition-all duration-200 border shadow-sm hover:shadow-md cursor-pointer overflow-hidden ";
   
   if (status === 'Cancelled') {
-    return style + "bg-red-50 text-red-600 border-red-200 opacity-60 line-through";
+    return style + "bg-canvas-cream text-slate-gray border-dust-taupe opacity-60 line-through";
   }
-  
+
   if (status === 'Completed') {
-    return style + "bg-[#F3F2F1] text-gray-500 border-gray-200 opacity-90";
+    return style + "bg-canvas-cream text-slate-gray border-dust-taupe opacity-90";
   }
 
   // Active styles based on client color if available, otherwise fallback to event type

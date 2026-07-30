@@ -137,15 +137,15 @@ export default function Clients() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
-      className="space-y-6 sm:space-y-8 text-[ink-black] pb-8 font-sans"
+      className="space-y-6 sm:space-y-8 text-ink-black pb-8 font-sans"
     >
       {/* Header Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[ink-black]/10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-dust-taupe">
         <div className="text-right">
-          <h1 className="text-2.5xl sm:text-3xl font-medium tracking-tight text-[ink-black] font-heading flex items-center gap-2">
+          <h1 className="text-2.5xl sm:text-3xl font-medium tracking-tight text-ink-black font-heading flex items-center gap-2">
             <span>ספר לקוחות ושותפים</span>
           </h1>
-          <p className="text-xs text-[slate-gray] mt-1 font-sans">ניהול מועדונים, מפיקים, מסעדות ולקוחות פרטיים</p>
+          <p className="text-xs text-slate-gray mt-1 font-sans">ניהול מועדונים, מפיקים, מסעדות ולקוחות פרטיים</p>
         </div>
         <motion.div whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
           <Button variant="default" onClick={openCreateModal} className="w-full justify-center">
@@ -156,27 +156,27 @@ export default function Clients() {
       </div>
 
       {isLoading ? (
-        <div className="p-12 text-center text-[slate-gray] text-xs font-medium">טוען לקוחות...</div>
+        <div className="p-12 text-center text-slate-gray text-xs font-medium">טוען לקוחות...</div>
       ) : clients.length === 0 ? (
-        <div className="border border-dashed border-[ink-black]/15 rounded-2xl p-10 bg-canvas-cream/50 flex flex-col items-center justify-center space-y-2 text-center my-4">
-          <Users className="w-8 h-8 text-[slate-gray] stroke-[1.5]" />
-          <p className="text-xs text-[slate-gray] font-bold font-heading">טרם נרשמו לקוחות במערכת</p>
-          <span className="text-[10px] text-[slate-gray]">לחץ על "הוסף לקוח" ליצירת כרטיס לקוח חדש</span>
+        <div className="border border-dashed border-dust-taupe rounded-2xl p-10 bg-canvas-cream/50 flex flex-col items-center justify-center space-y-2 text-center my-4">
+          <Users className="w-8 h-8 text-slate-gray stroke-[1.5]" />
+          <p className="text-xs text-slate-gray font-bold font-heading">טרם נרשמו לקוחות במערכת</p>
+          <span className="text-[10px] text-slate-gray">לחץ על "הוסף לקוח" ליצירת כרטיס לקוח חדש</span>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {clients.map((c) => (
             <motion.div key={c._id} whileHover={{ y: -3 }} whileTap={{ scale: 0.98 }} className="will-change-transform">
-              <Card className="p-5 sm:p-6 space-y-4 relative group hover:border-[ink-black]/30 transition-all rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] h-full flex flex-col justify-between">
+              <Card className="p-5 sm:p-6 space-y-4 relative group hover:border-ink-black/30 transition-all rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] h-full flex flex-col justify-between">
                 <div className="space-y-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center space-x-3 space-x-reverse">
-                      <div className={`p-3 rounded-xl border ${c.color ? colorMap[c.color] : 'bg-canvas-cream text-[ink-black] border-[ink-black]/10'}`}>
+                      <div className={`p-3 rounded-xl border ${c.color ? colorMap[c.color] : 'bg-canvas-cream text-ink-black border-dust-taupe'}`}>
                         <Building2 className="w-5 h-5" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-[ink-black] text-sm font-heading">{c.name}</h3>
-                        <Badge variant="secondary" className="mt-1 font-semibold text-[ink-black]">
+                        <h3 className="font-bold text-ink-black text-sm font-heading">{c.name}</h3>
+                        <Badge variant="secondary" className="mt-1 font-semibold text-ink-black">
                           {getClientTypeHebrew(c.type)}
                         </Badge>
                       </div>
@@ -194,7 +194,7 @@ export default function Clients() {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDelete(c._id)}
-                        className="hover:text-[#CF4500]"
+                        className="hover:text-danger"
                         title="הסר לקוח"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -202,25 +202,25 @@ export default function Clients() {
                     </div>
                   </div>
 
-                  <div className="space-y-2 pt-3 border-t border-[ink-black]/10 text-xs text-[slate-gray]">
+                  <div className="space-y-2 pt-3 border-t border-dust-taupe text-xs text-slate-gray">
                     {c.contactInfo?.email ? (
                       <div className="flex items-center space-x-2 space-x-reverse truncate">
-                        <Mail className="w-3.5 h-3.5 text-[ink-black] shrink-0" />
+                        <Mail className="w-3.5 h-3.5 text-ink-black shrink-0" />
                         <span className="truncate">{c.contactInfo.email}</span>
                       </div>
                     ) : (
-                      <div className="flex items-center space-x-2 space-x-reverse text-[slate-gray]">
+                      <div className="flex items-center space-x-2 space-x-reverse text-slate-gray">
                         <Mail className="w-3.5 h-3.5 shrink-0" />
                         <span>אין כתובת אימייל</span>
                       </div>
                     )}
                     {c.contactInfo?.phone ? (
                       <div className="flex items-center space-x-2 space-x-reverse">
-                        <Phone className="w-3.5 h-3.5 text-[ink-black] shrink-0" />
+                        <Phone className="w-3.5 h-3.5 text-ink-black shrink-0" />
                         <span>{c.contactInfo.phone}</span>
                       </div>
                     ) : (
-                      <div className="flex items-center space-x-2 space-x-reverse text-[slate-gray]">
+                      <div className="flex items-center space-x-2 space-x-reverse text-slate-gray">
                         <Phone className="w-3.5 h-3.5 shrink-0" />
                         <span>אין מס טלפון</span>
                       </div>
@@ -244,7 +244,7 @@ export default function Clients() {
 
           <form onSubmit={handleSubmit} className="space-y-4 pt-2">
             <div>
-              <label className="block text-[11px] font-bold text-[slate-gray] mb-1 uppercase tracking-wider font-heading">שם הלקוח / עסק</label>
+              <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">שם הלקוח / עסק</label>
               <Input
                 type="text"
                 required
@@ -255,11 +255,11 @@ export default function Clients() {
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-[slate-gray] mb-1 uppercase tracking-wider font-heading">סוג לקוח</label>
+              <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">סוג לקוח</label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as IClient['type'])}
-                className="w-full h-10 bg-canvas-cream border border-[ink-black]/15 rounded-xl px-4 py-2 text-xs text-[ink-black] focus:outline-none focus:border-[ink-black] focus:bg-white transition-all"
+                className="w-full h-10 bg-canvas-cream border border-dust-taupe rounded-2xl px-4 py-2 text-xs text-ink-black focus:outline-none focus:border-ink-black focus:bg-white transition-all"
               >
                 <option value="Club">מועדון</option>
                 <option value="Producer">מפיק</option>
@@ -269,7 +269,7 @@ export default function Clients() {
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-[slate-gray] mb-1.5 uppercase tracking-wider font-heading">צבע לקוח (ללוח השנה)</label>
+              <label className="block text-[11px] font-bold text-slate-gray mb-1.5 uppercase tracking-wider font-heading">צבע לקוח (ללוח השנה)</label>
               <div className="flex items-center gap-2">
                 {(['indigo', 'sky', 'amber', 'emerald', 'rose', 'slate'] as const).map((c) => {
                   const circleColors: Record<string, string> = {
@@ -295,7 +295,7 @@ export default function Clients() {
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-[slate-gray] mb-1 uppercase tracking-wider font-heading">אימייל (אופציונלי)</label>
+              <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">אימייל (אופציונלי)</label>
               <Input
                 type="email"
                 value={email}
@@ -307,7 +307,7 @@ export default function Clients() {
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-[slate-gray] mb-1 uppercase tracking-wider font-heading">טלפון (אופציונלי)</label>
+              <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">טלפון (אופציונלי)</label>
               <Input
                 type="text"
                 value={phone}
@@ -318,7 +318,7 @@ export default function Clients() {
               />
             </div>
 
-            <div className="pt-2 flex justify-end space-x-2 space-x-reverse border-t border-[ink-black]/10">
+            <div className="pt-2 flex justify-end space-x-2 space-x-reverse border-t border-dust-taupe">
               <Button
                 type="button"
                 variant="ghost"

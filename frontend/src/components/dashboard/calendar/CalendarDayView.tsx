@@ -66,10 +66,10 @@ export const CalendarDayView: React.FC<CalendarDayViewProps> = ({
   const currentTimePercentage = ((currentTime.getHours() * 60 + currentTime.getMinutes()) / 1440) * 100;
 
   return (
-    <div className="flex flex-col h-[700px] overflow-y-auto bg-white rounded-xl border border-gray-100 shadow-sm relative">
-      <div className="flex bg-gray-50/80 sticky top-0 z-20 border-b border-gray-100 backdrop-blur-sm p-4">
-        <h2 className="text-xl font-bold text-gray-800 flex flex-col items-center justify-center w-full">
-          <span className="text-sm text-gray-500 font-normal">
+    <div className="flex flex-col h-[700px] overflow-y-auto bg-white rounded-2xl border border-dust-taupe shadow-sm relative">
+      <div className="flex bg-canvas-cream/80 sticky top-0 z-20 border-b border-dust-taupe backdrop-blur-sm p-4">
+        <h2 className="text-xl font-bold text-ink-black flex flex-col items-center justify-center w-full">
+          <span className="text-sm text-slate-gray font-normal">
             {currentDate.toLocaleDateString('he-IL', { weekday: 'long' })}
           </span>
           <span>{format(currentDate, 'dd/MM/yyyy')}</span>
@@ -78,11 +78,11 @@ export const CalendarDayView: React.FC<CalendarDayViewProps> = ({
 
       <div className="flex flex-1 relative bg-white min-h-[1440px]">
         {/* Time Labels */}
-        <div className="w-16 flex flex-col border-l border-gray-100 bg-gray-50/30">
+        <div className="w-16 flex flex-col border-l border-dust-taupe bg-canvas-cream/30">
           {HOURS.map((hour) => (
             <div
               key={`label-${hour}`}
-              className="flex-1 h-[60px] text-[10px] text-gray-400 font-medium text-center py-2"
+              className="flex-1 h-[60px] text-[10px] text-slate-gray font-medium text-center py-2"
             >
               {`${String(hour).padStart(2, '0')}:00`}
             </div>
@@ -94,7 +94,7 @@ export const CalendarDayView: React.FC<CalendarDayViewProps> = ({
           {HOURS.map((hour) => (
             <div
               key={`grid-${hour}`}
-              className="h-[60px] border-b border-gray-50 transition-colors hover:bg-gray-50/50 cursor-pointer"
+              className="h-[60px] border-b border-dust-taupe transition-colors hover:bg-canvas-cream/50 cursor-pointer"
               onClick={() => {
                 const slotTime = new Date(currentDate);
                 slotTime.setHours(hour, 0, 0, 0);
@@ -108,10 +108,10 @@ export const CalendarDayView: React.FC<CalendarDayViewProps> = ({
           {/* Current Time Indicator */}
           {isToday && (
             <div
-              className="absolute left-0 right-0 border-t-2 border-red-400 z-30 pointer-events-none"
+              className="absolute left-0 right-0 border-t-2 border-danger z-30 pointer-events-none"
               style={{ top: `${currentTimePercentage}%` }}
             >
-              <div className="absolute -left-1.5 -top-1.5 w-3 h-3 bg-red-400 rounded-full" />
+              <div className="absolute -left-1.5 -top-1.5 w-3 h-3 bg-danger rounded-full" />
             </div>
           )}
 

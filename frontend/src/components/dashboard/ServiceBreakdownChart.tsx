@@ -35,32 +35,32 @@ export const ServiceBreakdownChart: React.FC<ServiceBreakdownChartProps> = ({
       "DJ Gig": {
         name: "תקליטנות (DJ)",
         amount: 0,
-        color: "#F5E7C6", // Indigo Blue
-        borderColor: "#4338CA",
+        color: "#A9C4A0", // Sage Green
+        borderColor: "#82A67A",
       },
       "Software Development": {
         name: "פיתוח תוכנה",
         amount: 0,
-        color: "#CF4500", // Signal Orange
-        borderColor: "#EA580C",
+        color: "#A78BFA", // Purple / Violet
+        borderColor: "#8B5CF6",
       },
       Maintenance: {
         name: "תחזוקה",
         amount: 0,
-        color: "#059669", // Emerald Green
-        borderColor: "#047857",
+        color: "#34D399", // Emerald Green
+        borderColor: "#10B981",
       },
       Consulting: {
         name: "ייעוץ",
         amount: 0,
-        color: "#8B5CF6", // Purple / Violet
-        borderColor: "#7C3AED",
+        color: "#C7DDBE", // Light Sage Green
+        borderColor: "#A9C4A0",
       },
       General: {
         name: "הכנסות כלליות",
         amount: 0,
-        color: "#64748B", // Slate Gray
-        borderColor: "#475569",
+        color: "#94A3B8", // Neutral Slate
+        borderColor: "#64748B",
       },
     };
 
@@ -123,7 +123,7 @@ export const ServiceBreakdownChart: React.FC<ServiceBreakdownChartProps> = ({
 
       <CardContent className="pt-0 my-auto">
         {categoriesData.totalIncome === 0 ? (
-          <div className="border border-dashed border-ink-black/15 rounded-xl p-8 bg-canvas-cream/50 flex flex-col items-center justify-center space-y-2 text-center my-auto">
+          <div className="border border-dashed border-dust-taupe rounded-2xl p-8 bg-canvas-cream/50 flex flex-col items-center justify-center space-y-2 text-center my-auto">
             <PieChart className="w-8 h-8 text-slate-gray stroke-[1.5]" />
             <p className="text-xs text-slate-gray font-semibold">
               טרם נרשמו הכנסות לפילוח שירותים
@@ -199,10 +199,10 @@ export const ServiceBreakdownChart: React.FC<ServiceBreakdownChartProps> = ({
                     key={cat.id}
                     onMouseEnter={() => setHoveredId(cat.id)}
                     onMouseLeave={() => setHoveredId(null)}
-                    className={`flex items-center justify-between px-4 py-2.5 rounded-xl border transition-all cursor-pointer ${
+                    className={`flex items-center justify-between px-4 py-2.5 rounded-2xl border transition-all cursor-pointer ${
                       isHovered
                         ? "bg-ink-black border-ink-black text-canvas-cream shadow-xs"
-                        : "bg-lifted-cream border-ink-black/10 text-ink-black hover:border-ink-black/30 shadow-xs"
+                        : "bg-lifted-cream border-dust-taupe text-ink-black hover:border-ink-black/30 shadow-xs"
                     }`}
                   >
                     <div className="flex items-center space-x-2.5 space-x-reverse truncate">

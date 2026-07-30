@@ -58,17 +58,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-[#141413] border-l border-white/10 w-64 p-6 text-white font-sans shadow-2xl">
+    <div className="flex flex-col h-full bg-ink-black border-l border-white/10 w-64 p-6 text-white font-sans shadow-2xl">
       {/* Brand Header */}
       <div className="flex items-center space-x-3 space-x-reverse px-2 py-2 mb-8">
-        <div className="w-9 h-9 rounded-xl bg-[#CF4500] text-white flex items-center justify-center shadow-md shrink-0">
+        <div className="w-9 h-9 rounded-full bg-white/10 border border-white/10 text-white flex items-center justify-center shrink-0">
           <Sparkles className="w-5 h-5 text-white" />
         </div>
         <div>
-          <span className="text-xl font-semibold text-white tracking-tight font-heading block">
+          <span className="text-xl font-bold text-white tracking-tight font-heading block">
             Vault
           </span>
-          <span className="block text-[11px] text-[#CBD5E1] font-normal">
+          <span className="block text-[11px] text-[#a3a19a] font-normal">
             ניהול כספים ותפעול
           </span>
         </div>
@@ -76,7 +76,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       <div className="flex-1 space-y-8 overflow-y-auto scrollbar-none">
         <div>
-          <h3 className="px-3 text-xs font-semibold text-[#94A3B8] uppercase tracking-[0.05em] mb-3 font-heading">
+          <h3 className="px-3 text-xs font-semibold text-[#8b8983] uppercase tracking-[0.05em] mb-3 font-heading">
             תפריט ראשי
           </h3>
           <nav className="space-y-1.5">
@@ -88,17 +88,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   to={item.path}
                   onClick={() => setMobileOpen(false)}
                   className={({isActive}) =>
-                    `flex items-center space-x-3 space-x-reverse px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                    `flex items-center space-x-3 space-x-reverse px-3.5 py-2.5 rounded-full text-xs font-semibold transition-all ${
                       isActive
-                        ? "bg-[#F3F0EE] text-[#141413] shadow-xs"
-                        : "text-[#CBD5E1] hover:text-white hover:bg-white/10"
+                        ? "bg-canvas-cream text-ink-black shadow-xs"
+                        : "text-[#b7b5ad] hover:text-white hover:bg-white/10"
                     }`
                   }
                 >
                   {({isActive}) => (
                     <>
                       <Icon
-                        className={`w-4 h-4 ${isActive ? "text-[#141413]" : "text-[#94A3B8]"}`}
+                        className={`w-4 h-4 ${isActive ? "text-ink-black" : "text-[#8b8983]"}`}
                       />
                       <span>{item.name}</span>
                     </>
@@ -110,7 +110,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         <div>
-          <h3 className="px-3 text-xs font-semibold text-[#94A3B8] uppercase tracking-[0.05em] mb-3 font-heading">
+          <h3 className="px-3 text-xs font-semibold text-[#8b8983] uppercase tracking-[0.05em] mb-3 font-heading">
             העדפות
           </h3>
           <nav className="space-y-1.5">
@@ -121,7 +121,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <a
                     key={item.name}
                     href={item.path}
-                    className="flex items-center space-x-3 space-x-reverse px-3.5 py-2.5 rounded-xl text-xs font-medium text-white/30 cursor-not-allowed transition-all"
+                    className="flex items-center space-x-3 space-x-reverse px-3.5 py-2.5 rounded-full text-xs font-medium text-white/30 cursor-not-allowed transition-all"
                     onClick={(e) => e.preventDefault()}
                   >
                     <Icon className="w-4 h-4 text-white/30" />
@@ -135,17 +135,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   to={item.path}
                   onClick={() => setMobileOpen(false)}
                   className={({isActive}) =>
-                    `flex items-center space-x-3 space-x-reverse px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                    `flex items-center space-x-3 space-x-reverse px-3.5 py-2.5 rounded-full text-xs font-semibold transition-all ${
                       isActive
-                        ? "bg-[#F3F0EE] text-[#141413] shadow-xs"
-                        : "text-[#CBD5E1] hover:text-white hover:bg-white/10"
+                        ? "bg-canvas-cream text-ink-black shadow-xs"
+                        : "text-[#b7b5ad] hover:text-white hover:bg-white/10"
                     }`
                   }
                 >
                   {({isActive}) => (
                     <>
                       <Icon
-                        className={`w-4 h-4 ${isActive ? "text-[#141413]" : "text-[#94A3B8]"}`}
+                        className={`w-4 h-4 ${isActive ? "text-ink-black" : "text-[#8b8983]"}`}
                       />
                       <span>{item.name}</span>
                     </>
@@ -159,17 +159,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* User Profile Card */}
       <div className="pt-4 mt-auto border-t border-white/10">
-        <div className="flex items-center justify-between p-3 rounded-xl bg-[#27272A]/70 border border-white/10">
+        <div className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/10">
           <div className="flex items-center space-x-3 space-x-reverse truncate">
-            <div className="w-8 h-8 rounded-lg bg-[#3F3F46] border border-white/10 text-slate-200 font-medium flex items-center justify-center text-xs shrink-0">
-              <User className="w-4 h-4 text-slate-300" />
+            <div className="w-8 h-8 rounded-full bg-ink-700 border border-white/10 text-white font-semibold flex items-center justify-center text-xs shrink-0">
+              <User className="w-4 h-4 text-[#d8d6d0]" />
             </div>
 
             <div className="truncate">
               <h4 className="text-xs font-semibold text-white truncate">
                 {user?.username || "אדמין"}
               </h4>
-              <p className="text-[11px] text-[#CBD5E1] font-normal truncate mt-0.5">
+              <p className="text-[11px] text-[#b7b5ad] font-normal truncate mt-0.5">
                 מנהל מערכת
               </p>
             </div>
@@ -179,7 +179,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             variant="ghost"
             size="icon"
             onClick={handleLogout}
-            className="text-[#CBD5E1] hover:text-[#CF4500] hover:bg-white/10 rounded-lg shrink-0 h-8 w-8"
+            className="text-[#b7b5ad] hover:text-danger hover:bg-white/10 shrink-0 h-8 w-8"
             title="התנתק מהמערכת"
           >
             <LogOut className="w-4 h-4" />

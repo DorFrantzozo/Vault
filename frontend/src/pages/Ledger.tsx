@@ -1,4 +1,4 @@
-import React, {useState, useMemo} from "react";
+import React, {useState, useMemo, useEffect} from "react";
 import {
   Plus,
   ArrowUpRight,
@@ -36,6 +36,7 @@ import {
   TableHead,
   TableCell,
 } from "../components/ui/table";
+import {Pagination} from "../components/ui/pagination";
 import {
   Dialog,
   DialogContent,
@@ -215,6 +216,19 @@ export default function Ledger() {
     });
   }, [transactions, filterType, searchQuery]);
 
+  const PAGE_SIZE = 15;
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / PAGE_SIZE));
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterType, searchQuery]);
+
+  const paginatedTransactions = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredTransactions.slice(start, start + PAGE_SIZE);
+  }, [filteredTransactions, currentPage]);
+
   const totals = useMemo(() => {
     let income = 0;
     let expense = 0;
@@ -270,21 +284,21 @@ export default function Ledger() {
   };
 
   return (
-    <div className="space-y-8 text-[ink-black] pb-8 font-sans">
+    <div className="space-y-8 text-ink-black pb-8 font-sans">
       {/* Header Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[ink-black]/10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-dust-taupe">
         <div className="text-right">
-          <h1 className="text-3xl font-medium tracking-tight text-[ink-black] font-heading flex items-center gap-2">
+          <h1 className="text-3xl font-medium tracking-tight text-ink-black font-heading flex items-center gap-2">
             <span>ספר תנועות כספיות</span>
           </h1>
-          <p className="text-xs text-[slate-gray] mt-1 font-sans">
+          <p className="text-xs text-slate-gray mt-1 font-sans">
             ניהול, סיווג ותיעוד הכנסות והוצאות בזמן אמת
           </p>
         </div>
 
         <div className="flex items-center space-x-3 space-x-reverse self-start sm:self-auto">
           <Button variant="outline" onClick={handleExportCSV}>
-            <FileSpreadsheet className="w-4 h-4 text-[slate-gray] ml-1.5" />
+            <FileSpreadsheet className="w-4 h-4 text-slate-gray ml-1.5" />
             <span>ייצא ל-CSV</span>
           </Button>
 
@@ -307,7 +321,7 @@ export default function Ledger() {
             הכל
           </Button>
           <Button
-            variant={filterType === "Income" ? "default" : "outline"}
+            variant={filterType === "Income" ? "success" : "outline"}
             onClick={() => setFilterType("Income")}
             className="flex-1 md:flex-initial"
           >
@@ -326,7 +340,7 @@ export default function Ledger() {
 
         {/* Search Input */}
         <div className="relative w-full md:w-72">
-          <Search className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-[slate-gray]" />
+          <Search className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-slate-gray" />
           <Input
             type="text"
             value={searchQuery}
@@ -340,19 +354,19 @@ export default function Ledger() {
       {/* Transactions Table Section */}
       <Card className="overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
         {isLoading ? (
-          <div className="p-16 text-center text-[slate-gray] text-xs font-medium">
+          <div className="p-16 text-center text-slate-gray text-xs font-medium">
             טוען תנועות כספיות...
           </div>
         ) : filteredTransactions.length === 0 ? (
           <div className="p-12 sm:p-16 flex flex-col items-center justify-center space-y-3 text-center">
-            <div className="w-12 h-12 rounded-full bg-canvas-cream flex items-center justify-center text-[slate-gray] mb-1">
+            <div className="w-12 h-12 rounded-full bg-canvas-cream flex items-center justify-center text-slate-gray mb-1">
               <FileSpreadsheet className="w-6 h-6 stroke-[1.5]" />
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-[ink-black] font-bold font-heading">
+              <p className="text-sm text-ink-black font-bold font-heading">
                 לא נמצאו תנועות כספיות
               </p>
-              <p className="text-xs text-[slate-gray]">
+              <p className="text-xs text-slate-gray">
                 לחץ על "תנועה חדשה" ליצירת רישום הכנסה/הוצאה
               </p>
             </div>
@@ -372,9 +386,9 @@ export default function Ledger() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTransactions.map((t) => (
+              {paginatedTransactions.map((t) => (
                 <TableRow key={t._id}>
-                  <TableCell className="font-bold text-[ink-black]">
+                  <TableCell className="font-bold text-ink-black">
                     {new Date(t.date).toLocaleDateString("he-IL")}
                   </TableCell>
                   <TableCell>
@@ -385,18 +399,17 @@ export default function Ledger() {
                     </Badge>
                   </TableCell>
                   <TableCell
-                    className={`font-bold font-heading ${t.type === "Income" ? "text-[ink-black]" : "text-[#CF4500]"}`}
+                    className={`font-bold font-heading whitespace-nowrap ${t.type === "Income" ? "text-success" : "text-danger"}`}
                   >
-                    {t.type === "Income" ? "+" : "-"}₪
-                    {t.amount.toLocaleString()}
+                    {t.type === "Income" ? "+" : "-"}₪{t.amount.toLocaleString()}
                   </TableCell>
-                  <TableCell className="font-medium text-[slate-gray]">
+                  <TableCell className="font-medium text-slate-gray">
                     {getServiceTypeHebrew(t.serviceType)}
                   </TableCell>
-                  <TableCell className="font-medium text-[slate-gray]">
+                  <TableCell className="font-medium text-slate-gray">
                     {typeof t.client === "object" ? t.client?.name : "-"}
                   </TableCell>
-                  <TableCell className="text-[slate-gray] max-w-xs truncate">
+                  <TableCell className="text-slate-gray max-w-xs truncate">
                     {t.notes || "-"}
                   </TableCell>
                   <TableCell>
@@ -405,13 +418,13 @@ export default function Ledger() {
                         href={t.attachmentUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-xs text-[#CF4500] hover:underline font-semibold"
+                        className="inline-flex items-center gap-1 text-xs text-ink-black hover:underline font-semibold"
                       >
                         <Paperclip className="w-3.5 h-3.5" />
                         <span>מסמך</span>
                       </a>
                     ) : (
-                      <span className="text-[#94A3B8] text-xs">-</span>
+                      <span className="text-slate-gray text-xs">-</span>
                     )}
                   </TableCell>
                   <TableCell className="text-left">
@@ -428,7 +441,7 @@ export default function Ledger() {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDelete(t._id)}
-                        className="hover:text-[#CF4500]"
+                        className="hover:text-danger"
                         title="מחק תנועה"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -441,17 +454,26 @@ export default function Ledger() {
           </Table>
         )}
 
+        {!isLoading && filteredTransactions.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            className="border-t border-dust-taupe"
+          />
+        )}
+
         {/* Table Footer Summary */}
-        <div className="p-4 px-6 bg-canvas-cream/60 border-t border-[ink-black]/10 flex flex-wrap items-center justify-between gap-4 text-xs font-bold font-heading">
+        <div className="p-4 px-6 bg-canvas-cream/60 border-t border-dust-taupe flex flex-wrap items-center justify-between gap-4 text-xs font-bold font-heading">
           <div>סה"כ תנועות: {filteredTransactions.length}</div>
           <div className="flex items-center space-x-6 space-x-reverse">
-            <span className="text-[#64544c]">
+            <span className="text-success">
               סך הכנסות: ₪{totals.income.toLocaleString()}
             </span>
-            <span className="text-[#ff0000]">
+            <span className="text-danger">
               סך הוצאות: ₪{totals.expense.toLocaleString()}
             </span>
-            <span className="text-[#1fc41f]">
+            <span className="text-ink-black">
               מאזן נקי: ₪{totals.net.toLocaleString()}
             </span>
           </div>
@@ -473,14 +495,14 @@ export default function Ledger() {
 
           <form onSubmit={handleSubmit} className="space-y-4 pt-2">
             {/* Type Toggle */}
-            <div className="flex bg-[#F3F0EE] p-1 rounded-xl border border-[#141413]/10">
+            <div className="flex bg-canvas-cream p-1 rounded-full border border-dust-taupe">
               <button
                 type="button"
                 onClick={() => setType("Income")}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                className={`flex-1 py-2 rounded-full text-xs font-bold transition-all ${
                   type === "Income"
-                    ? "bg-[#141413] text-white shadow-sm"
-                    : "text-[#475569] hover:text-[#141413]"
+                    ? "bg-ink-black text-white shadow-sm"
+                    : "text-slate-gray hover:text-ink-black"
                 }`}
               >
                 הכנסה (+)
@@ -488,10 +510,10 @@ export default function Ledger() {
               <button
                 type="button"
                 onClick={() => setType("Expense")}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                className={`flex-1 py-2 rounded-full text-xs font-bold transition-all ${
                   type === "Expense"
-                    ? "bg-[#CF4500] text-white shadow-sm"
-                    : "text-[#475569] hover:text-[#141413]"
+                    ? "bg-danger text-white shadow-sm"
+                    : "text-slate-gray hover:text-ink-black"
                 }`}
               >
                 הוצאה (-)
@@ -500,7 +522,7 @@ export default function Ledger() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[11px] font-bold text-[slate-gray] mb-1 uppercase tracking-wider font-heading">
+                <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">
                   סכום (₪)
                 </label>
                 <Input
@@ -513,7 +535,7 @@ export default function Ledger() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-[slate-gray] mb-1 uppercase tracking-wider font-heading">
+                <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">
                   תאריך
                 </label>
                 <Input
@@ -527,13 +549,13 @@ export default function Ledger() {
 
             {type === "Income" && (
               <div>
-                <label className="block text-[11px] font-bold text-[slate-gray] mb-1 uppercase tracking-wider font-heading">
+                <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">
                   סוג שירות
                 </label>
                 <select
                   value={serviceType}
                   onChange={(e) => setServiceType(e.target.value as any)}
-                  className="w-full h-10 bg-canvas-cream border border-[ink-black]/15 rounded-xl px-4 py-2 text-xs text-[ink-black] focus:outline-none focus:border-[ink-black] focus:bg-lifted-cream transition-all"
+                  className="w-full h-10 bg-canvas-cream border border-dust-taupe rounded-2xl px-4 py-2 text-xs text-ink-black focus:outline-none focus:border-ink-black focus:bg-lifted-cream transition-all"
                 >
                   <option value="DJ Gig">תקליטנות (DJ)</option>
                   <option value="Software Development">פיתוח תוכנה</option>
@@ -547,13 +569,13 @@ export default function Ledger() {
             {/* Client Picker with Quick Create Button */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-[11px] font-bold text-[slate-gray] uppercase tracking-wider font-heading">
+                <label className="block text-[11px] font-bold text-slate-gray uppercase tracking-wider font-heading">
                   לקוח (אופציונלי)
                 </label>
                 <button
                   type="button"
                   onClick={() => setIsQuickClientOpen(!isQuickClientOpen)}
-                  className="text-[11px] font-bold text-[#CF4500] hover:underline flex items-center gap-1"
+                  className="text-[11px] font-bold text-ink-black hover:underline flex items-center gap-1"
                 >
                   <Plus className="w-3 h-3" />
                   <span>הוסף לקוח חדש</span>
@@ -563,7 +585,7 @@ export default function Ledger() {
               <select
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
-                className="w-full h-10 bg-canvas-cream border border-[ink-black]/15 rounded-xl px-4 py-2 text-xs text-[ink-black] focus:outline-none focus:border-[ink-black] focus:bg-lifted-cream transition-all"
+                className="w-full h-10 bg-canvas-cream border border-dust-taupe rounded-2xl px-4 py-2 text-xs text-ink-black focus:outline-none focus:border-ink-black focus:bg-lifted-cream transition-all"
               >
                 <option value="">-- ללא לקוח --</option>
                 {clients.map((c) => (
@@ -576,14 +598,14 @@ export default function Ledger() {
 
             {/* Quick Client Embedded Panel */}
             {isQuickClientOpen && (
-              <div className="p-4 rounded-xl bg-canvas-cream border border-[ink-black]/15 space-y-3">
-                <h4 className="text-xs font-bold text-[ink-black] flex items-center gap-1.5 font-heading">
-                  <Users className="w-3.5 h-3.5 text-[#CF4500]" />
+              <div className="p-4 rounded-2xl bg-canvas-cream border border-dust-taupe space-y-3">
+                <h4 className="text-xs font-bold text-ink-black flex items-center gap-1.5 font-heading">
+                  <Users className="w-3.5 h-3.5 text-ink-black" />
                   <span>הוספת לקוח מהירה</span>
                 </h4>
 
                 {quickClientError && (
-                  <div className="text-[10px] text-[#CF4500] font-semibold">
+                  <div className="text-[10px] text-danger font-semibold">
                     {quickClientError}
                   </div>
                 )}
@@ -598,7 +620,7 @@ export default function Ledger() {
                   <select
                     value={newClientType}
                     onChange={(e) => setNewClientType(e.target.value as any)}
-                    className="h-10 bg-lifted-cream border border-[ink-black]/15 rounded-xl px-3 text-xs text-[ink-black]"
+                    className="h-10 bg-lifted-cream border border-dust-taupe rounded-2xl px-3 text-xs text-ink-black"
                   >
                     <option value="Club">מועדון</option>
                     <option value="Producer">מפיק</option>
@@ -629,7 +651,7 @@ export default function Ledger() {
             )}
 
             <div>
-              <label className="block text-[11px] font-bold text-[slate-gray] mb-1 uppercase tracking-wider font-heading">
+              <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">
                 קבלה / קובץ אסמכתא
               </label>
               <FileDropzone
@@ -639,7 +661,7 @@ export default function Ledger() {
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-[slate-gray] mb-1 uppercase tracking-wider font-heading">
+              <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">
                 תיאור / הערות
               </label>
               <textarea
@@ -647,11 +669,11 @@ export default function Ledger() {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="פרטים נוספים לגבי התנועה..."
-                className="w-full bg-canvas-cream border border-[ink-black]/15 rounded-xl px-4 py-2 text-xs text-[ink-black] placeholder-slate-gray focus:outline-none focus:border-[ink-black] focus:bg-lifted-cream transition-all"
+                className="w-full bg-canvas-cream border border-dust-taupe rounded-2xl px-4 py-2 text-xs text-ink-black placeholder-slate-gray focus:outline-none focus:border-ink-black focus:bg-lifted-cream transition-all"
               />
             </div>
 
-            <div className="pt-2 flex justify-end space-x-2 space-x-reverse border-t border-[ink-black]/10">
+            <div className="pt-2 flex justify-end space-x-2 space-x-reverse border-t border-dust-taupe">
               <Button
                 type="button"
                 variant="ghost"

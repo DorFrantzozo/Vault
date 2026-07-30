@@ -63,28 +63,28 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const getIcon = () => {
     switch (options.type) {
       case 'danger':
-        return <AlertTriangle className="w-5 h-5 text-[#CF4500]" />;
+        return <AlertTriangle className="w-5 h-5 text-danger" />;
       case 'warning':
-        return <AlertTriangle className="w-5 h-5 text-amber-500" />;
+        return <AlertTriangle className="w-5 h-5 text-warning" />;
       case 'success':
-        return <CheckCircle2 className="w-5 h-5 text-emerald-600" />;
+        return <CheckCircle2 className="w-5 h-5 text-success" />;
       case 'info':
       default:
-        return <Info className="w-5 h-5 text-[#475569]" />;
+        return <Info className="w-5 h-5 text-slate-gray" />;
     }
   };
 
   const getConfirmButtonStyle = () => {
     switch (options.type) {
       case 'danger':
-        return 'bg-[#CF4500] hover:bg-[#b03b00] text-white';
+        return 'bg-danger hover:bg-danger/90 text-white';
       case 'warning':
-        return 'bg-amber-500 hover:bg-amber-600 text-white';
+        return 'bg-warning hover:bg-warning/90 text-white';
       case 'success':
-        return 'bg-emerald-600 hover:bg-emerald-700 text-white';
+        return 'bg-success hover:bg-success/90 text-white';
       case 'info':
       default:
-        return 'bg-[#141413] hover:bg-[#2a2a28] text-white';
+        return 'bg-ink-black hover:bg-ink-700 text-white';
     }
   };
 
@@ -100,31 +100,31 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           />
 
           {/* Modal Card — white, high-contrast */}
-          <div className="relative z-10 bg-white border border-[#141413]/12 rounded-2xl p-6 max-w-sm w-full shadow-[0_20px_60px_rgba(0,0,0,0.5)] space-y-4 animate-in fade-in zoom-in-95 duration-150">
-            
+          <div className="relative z-10 bg-white border border-dust-taupe rounded-3xl p-6 max-w-sm w-full shadow-[0_20px_60px_rgba(0,0,0,0.35)] space-y-4 animate-in fade-in zoom-in-95 duration-150">
+
             {/* Header */}
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-[#F5F5F4] border border-[#141413]/10">
+                <div className="p-2 rounded-full bg-canvas-cream border border-dust-taupe">
                   {getIcon()}
                 </div>
-                <h3 className="text-sm font-bold text-[#141413] font-heading">
+                <h3 className="text-sm font-bold text-ink-black font-heading">
                   {options.title || 'אישור פעולה'}
                 </h3>
               </div>
               <button
                 onClick={handleCancel}
-                className="p-1.5 rounded-lg text-[#64748B] hover:text-[#141413] hover:bg-[#F5F5F4] transition-colors"
+                className="p-1.5 rounded-full text-slate-gray hover:text-ink-black hover:bg-canvas-cream transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Divider */}
-            <div className="border-t border-[#141413]/10" />
+            <div className="border-t border-dust-taupe" />
 
             {/* Message */}
-            <p className="text-sm text-[#374151] leading-relaxed">
+            <p className="text-sm text-ink-black leading-relaxed">
               {options.message}
             </p>
 
@@ -133,14 +133,14 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({ children }) =
               {options.showCancel && (
                 <button
                   onClick={handleCancel}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-[#374151] bg-[#F5F5F4] hover:bg-[#E7E5E4] border border-[#141413]/12 transition-all active:scale-95"
+                  className="px-4 py-2 rounded-full text-xs font-semibold text-ink-black bg-canvas-cream hover:bg-soft-bone border border-dust-taupe transition-all active:scale-95"
                 >
                   {options.cancelText || 'ביטול'}
                 </button>
               )}
               <button
                 onClick={handleConfirm}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all active:scale-95 ${getConfirmButtonStyle()}`}
+                className={`px-4 py-2 rounded-full text-xs font-semibold transition-all active:scale-95 ${getConfirmButtonStyle()}`}
               >
                 {options.confirmText || 'אישור'}
               </button>

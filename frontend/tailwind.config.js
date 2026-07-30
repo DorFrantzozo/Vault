@@ -11,32 +11,32 @@ export default {
         'canvas-cream': 'var(--canvas-cream)',
         'lifted-cream': 'var(--lifted-cream)',
         'ink-black': 'var(--ink-black)',
-        'signal-orange': 'var(--signal-orange)',
-        'light-signal-orange': 'var(--light-signal-orange)',
-        'clay-brown': 'var(--clay-brown)',
+        'ink-700': 'var(--ink-700)',
         'slate-gray': 'var(--slate-gray)',
+        'text-faint': 'var(--text-subtle)',
         'dust-taupe': 'var(--dust-taupe)',
         'link-blue': 'var(--link-blue)',
         'soft-bone': 'var(--soft-bone)',
-        charcoal: {
-          950: '#0e0f12',
-          900: '#141518',
-          800: '#1a1b1f',
-          700: '#23242a',
-          600: '#2e3037',
+        success: {
+          DEFAULT: 'var(--success)',
+          bg: 'var(--success-bg)',
         },
-        accent: {
-          lime: '#e2f853',
-          limeHover: '#d4ea43',
-          cyan: '#7ee7f8',
-          purple: '#b3b5ff',
-          mint: '#a8f0bb',
-          rose: '#ff8ba7',
-        }
+        info: {
+          DEFAULT: 'var(--info)',
+          bg: 'var(--info-bg)',
+        },
+        warning: {
+          DEFAULT: 'var(--warning)',
+          bg: 'var(--warning-bg)',
+        },
+        danger: {
+          DEFAULT: 'var(--danger)',
+          bg: 'var(--danger-bg)',
+        },
       },
       fontFamily: {
-        sans: ['"Sofia Sans"', 'Heebo', 'Inter', 'sans-serif'],
-        heading: ['"Sofia Sans"', 'Rubik', 'Heebo', 'sans-serif'],
+        sans: ['Rubik', 'Heebo', 'Inter', 'sans-serif'],
+        heading: ['Rubik', 'Heebo', 'sans-serif'],
       },
       borderRadius: {
         'button-pill': '20px',

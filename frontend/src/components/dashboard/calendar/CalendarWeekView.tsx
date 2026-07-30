@@ -66,18 +66,18 @@ export const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   const currentTimePercentage = ((currentTime.getHours() * 60 + currentTime.getMinutes()) / 1440) * 100;
 
   return (
-    <div className="flex flex-col h-[700px] overflow-y-auto bg-white rounded-xl border border-gray-100 shadow-sm relative">
+    <div className="flex flex-col h-[700px] overflow-y-auto bg-white rounded-2xl border border-dust-taupe shadow-sm relative">
       {/* Week Header */}
-      <div className="flex bg-gray-50/80 sticky top-0 z-20 border-b border-gray-100 backdrop-blur-sm">
-        <div className="w-12 sm:w-16 border-l border-gray-100" /> {/* Time column spacer */}
+      <div className="flex bg-canvas-cream/80 sticky top-0 z-20 border-b border-dust-taupe backdrop-blur-sm">
+        <div className="w-12 sm:w-16 border-l border-dust-taupe" /> {/* Time column spacer */}
         {weekDays.map((day, i) => (
-          <div key={i} className="flex-1 text-center py-3 px-1 border-l border-gray-100 last:border-l-0">
-            <div className="text-xs text-gray-500 font-medium mb-1">
+          <div key={i} className="flex-1 text-center py-3 px-1 border-l border-dust-taupe last:border-l-0">
+            <div className="text-xs text-slate-gray font-medium mb-1">
               {day.toLocaleDateString('he-IL', { weekday: 'short' })}
             </div>
             <div
               className={`text-sm sm:text-base font-bold w-7 h-7 mx-auto flex items-center justify-center rounded-full ${
-                isSameDay(day, currentTime) ? 'bg-red-50 text-red-600' : 'text-gray-800'
+                isSameDay(day, currentTime) ? 'bg-ink-black text-white' : 'text-ink-black'
               }`}
             >
               {day.getDate()}
@@ -89,11 +89,11 @@ export const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
       {/* Week Grid */}
       <div className="flex flex-1 relative bg-white min-h-[1440px]">
         {/* Time Labels */}
-        <div className="w-12 sm:w-16 flex flex-col border-l border-gray-100 bg-gray-50/30">
+        <div className="w-12 sm:w-16 flex flex-col border-l border-dust-taupe bg-canvas-cream/30">
           {HOURS.map((hour) => (
             <div
               key={`label-${hour}`}
-              className="flex-1 h-[60px] text-[9px] sm:text-[10px] text-gray-400 font-medium text-center py-2"
+              className="flex-1 h-[60px] text-[9px] sm:text-[10px] text-slate-gray font-medium text-center py-2"
             >
               {`${String(hour).padStart(2, '0')}:00`}
             </div>
@@ -106,12 +106,12 @@ export const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
           const isToday = isSameDay(day, currentTime);
 
           return (
-            <div key={dayIndex} className="flex-1 relative border-l border-gray-100 last:border-l-0">
+            <div key={dayIndex} className="flex-1 relative border-l border-dust-taupe last:border-l-0">
               {/* Grid Cells & Drop Zones */}
               {HOURS.map((hour) => (
                 <div
                   key={`grid-${dayIndex}-${hour}`}
-                  className="h-[60px] border-b border-gray-50 transition-colors hover:bg-gray-50/50 cursor-pointer"
+                  className="h-[60px] border-b border-dust-taupe transition-colors hover:bg-canvas-cream/50 cursor-pointer"
                   onClick={() => {
                     const slotTime = new Date(day);
                     slotTime.setHours(hour, 0, 0, 0);
@@ -125,10 +125,10 @@ export const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
               {/* Current Time Indicator */}
               {isToday && (
                 <div
-                  className="absolute left-0 right-0 border-t-2 border-red-400 z-30 pointer-events-none"
+                  className="absolute left-0 right-0 border-t-2 border-danger z-30 pointer-events-none"
                   style={{ top: `${currentTimePercentage}%` }}
                 >
-                  <div className="absolute -left-1.5 -top-1.5 w-3 h-3 bg-red-400 rounded-full" />
+                  <div className="absolute -left-1.5 -top-1.5 w-3 h-3 bg-danger rounded-full" />
                 </div>
               )}
 

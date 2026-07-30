@@ -3,44 +3,52 @@
 @tailwind utilities;
 
 :root {
-  /* Warm Light Theme — Gray background, White cards */
-  --canvas-cream: #F3F0EE;    /* App background: warm off-white gray */
+  /* Warm monochrome theme — ink black + warm surface, no orange */
+  --canvas-cream: #F2F1EE;     /* App background: warm surface */
   --lifted-cream: #FFFFFF;     /* Card / surface: pure white */
-  --ink-black: #141413;        /* Main text: near-black */
-  --signal-orange: #CF4500;
-  --light-signal-orange: #F37338;
-  --clay-brown: #C2410C;
-  --slate-gray: #475569;       /* Muted text */
-  --dust-taupe: #D4D0CC;       /* Divider / border */
+  --ink-black: #141414;        /* Ink 950 — primary CTAs, dark surfaces */
+  --ink-700: #3A3A3A;          /* Ink 700 — hover on dark surfaces */
+  --slate-gray: #9A988F;       /* Muted text */
+  --dust-taupe: #E9E7E1;       /* Divider / border */
   --link-blue: #2563EB;
-  --soft-bone: #F3F0EE;        /* Secondary surfaces / inputs */
+  --soft-bone: #F2F1EE;        /* Secondary surfaces / inputs */
 
-  --bg-app: #F3F0EE;
-  --bg-sidebar: #FFFFFF;
+  --bg-app: #F2F1EE;
+  --bg-sidebar: #141414;
   --bg-card: #FFFFFF;
-  --bg-card-hover: #F8F7F6;
-  --bg-input: #F3F0EE;
+  --bg-card-hover: #FAFAF8;
+  --bg-input: #F2F1EE;
 
-  --border-subtle: rgba(20, 20, 19, 0.08);
-  --border-strong: rgba(20, 20, 19, 0.15);
+  --border-subtle: #E9E7E1;
+  --border-strong: rgba(20, 20, 20, 0.15);
 
   /* Text & Typography */
-  --text-main: #141413;
-  --text-muted: #475569;
-  --text-subtle: #94A3B8;
+  --text-main: #17171A;
+  --text-muted: #9A988F;
+  --text-subtle: #C2C0B6;
 
-  --font-heading: "Sofia Sans", "Rubik", "Heebo", sans-serif;
-  --font-body: "Sofia Sans", "Heebo", "Inter", sans-serif;
+  /* Status colors */
+  --success: #1A9C46;
+  --success-bg: #E7F6EC;
+  --info: #7C3AED;
+  --info-bg: #F0E9FD;
+  --warning: #D6357A;
+  --warning-bg: #FBE6F0;
+  --danger: #C23434;
+  --danger-bg: #FDE8E8;
+
+  --font-heading: "Rubik", "Heebo", sans-serif;
+  --font-body: "Rubik", "Heebo", "Inter", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
 }
 
 @layer base {
   body {
     background-color: var(--canvas-cream);
-    color: var(--ink-black);
+    color: var(--text-main);
     min-height: 100vh;
     font-family: var(--font-body);
-    font-weight: 450;
+    font-weight: 400;
     direction: rtl;
   }
 
@@ -50,26 +58,27 @@
   h4,
   .font-heading {
     font-family: var(--font-heading);
-    font-weight: 500;
+    font-weight: 700;
     letter-spacing: -0.02em;
   }
 
   h1 {
-    font-size: 4rem;
-    line-height: 1;
+    font-size: 2.75rem;
+    line-height: 1.1;
     letter-spacing: -0.02em;
   }
 
   h2 {
-    font-size: 2.25rem;
+    font-size: 1.75rem;
     line-height: 1.2;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
   }
 
   h3 {
-    font-size: 1.5rem;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: normal;
   }
 
   input,
@@ -90,16 +99,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #F3F0EE;
+  background: #F2F1EE;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D4D0CC;
+  background: #D8D6D0;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #B8B4B0;
+  background: #C2C0B6;
 }
 
 /* Light theme select/option fix */

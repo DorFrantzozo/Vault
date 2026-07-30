@@ -53,28 +53,28 @@ export const EventTooltip: React.FC<EventTooltipProps> = ({ event, children }) =
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 2, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-white border border-gray-100 shadow-xl rounded-xl text-left pointer-events-none flex flex-col gap-2"
+            className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-white border border-dust-taupe shadow-xl rounded-2xl text-left pointer-events-none flex flex-col gap-2"
             style={{ direction: 'rtl' }}
           >
             <div className="flex items-start justify-between">
-              <span className="text-xs font-bold px-2 py-0.5 bg-gray-100 rounded-md text-gray-700">
+              <span className="text-xs font-bold px-2 py-0.5 bg-canvas-cream rounded-md text-ink-black">
                 {getEventTypeHebrew(event.type)}
               </span>
               {event.status === 'Completed' && (
-                <span className="text-[10px] text-green-600 font-semibold bg-green-50 px-1.5 py-0.5 rounded">
+                <span className="text-[10px] text-success font-semibold bg-success-bg px-1.5 py-0.5 rounded">
                   הושלם
                 </span>
               )}
             </div>
 
-            <div className="font-semibold text-gray-800 text-sm flex items-center gap-1.5">
-              <Building2 className="w-3.5 h-3.5 text-gray-400" />
+            <div className="font-semibold text-ink-black text-sm flex items-center gap-1.5">
+              <Building2 className="w-3.5 h-3.5 text-slate-gray" />
               <span>
                 {typeof event.client === 'object' ? event.client?.name : 'לקוח כללי'}
               </span>
             </div>
 
-            <div className="flex items-center gap-3 text-xs text-gray-500">
+            <div className="flex items-center gap-3 text-xs text-slate-gray">
               <div className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 <span>{format(eventDate, 'HH:mm')}</span>
@@ -82,7 +82,7 @@ export const EventTooltip: React.FC<EventTooltipProps> = ({ event, children }) =
             </div>
 
             {event.description && (
-              <p className="text-xs text-gray-600 border-t border-gray-50 pt-2 mt-1 line-clamp-2">
+              <p className="text-xs text-slate-gray border-t border-dust-taupe pt-2 mt-1 line-clamp-2">
                 {event.description}
               </p>
             )}

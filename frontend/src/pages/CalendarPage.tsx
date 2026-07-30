@@ -82,27 +82,27 @@ export default function CalendarPage() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
-      className="space-y-6 sm:space-y-8 text-gray-800 pb-8 font-sans"
+      className="space-y-6 sm:space-y-8 text-ink-black pb-8 font-sans"
     >
       {/* Header & Controls */}
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 pb-4 border-b border-gray-100">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 pb-4 border-b border-dust-taupe">
         <div className="text-right">
-          <h1 className="text-2.5xl sm:text-3xl font-medium tracking-tight text-gray-900 font-heading flex items-center gap-2">
-            <CalendarDays className="w-6 h-6 text-gray-900" />
+          <h1 className="text-2.5xl sm:text-3xl font-medium tracking-tight text-ink-black font-heading flex items-center gap-2">
+            <CalendarDays className="w-6 h-6 text-ink-black" />
             <span>יומן אירועים</span>
           </h1>
-          <p className="text-xs text-gray-500 mt-1">נהל הופעות, פרויקטים ומשימות בקלות</p>
+          <p className="text-xs text-slate-gray mt-1">נהל הופעות, פרויקטים ומשימות בקלות</p>
         </div>
 
         {/* View Toggles & Navigation */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full xl:w-auto">
-          
+
           {/* View Toggles */}
-          <div className="flex items-center p-1 bg-gray-100 rounded-xl shadow-inner">
+          <div className="flex items-center p-1 bg-canvas-cream rounded-full shadow-inner">
             <button
               onClick={() => setView('month')}
-              className={`flex-1 sm:flex-none px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${
-                view === 'month' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
+              className={`flex-1 sm:flex-none px-4 py-1.5 text-sm font-medium rounded-full transition-all ${
+                view === 'month' ? 'bg-white shadow-sm text-ink-black' : 'text-slate-gray hover:text-ink-black'
               }`}
             >
               <LayoutGrid className="w-4 h-4 mx-auto mb-1 hidden sm:block" />
@@ -110,8 +110,8 @@ export default function CalendarPage() {
             </button>
             <button
               onClick={() => setView('week')}
-              className={`flex-1 sm:flex-none px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${
-                view === 'week' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
+              className={`flex-1 sm:flex-none px-4 py-1.5 text-sm font-medium rounded-full transition-all ${
+                view === 'week' ? 'bg-white shadow-sm text-ink-black' : 'text-slate-gray hover:text-ink-black'
               }`}
             >
               <Rows className="w-4 h-4 mx-auto mb-1 hidden sm:block" />
@@ -119,8 +119,8 @@ export default function CalendarPage() {
             </button>
             <button
               onClick={() => setView('day')}
-              className={`flex-1 sm:flex-none px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${
-                view === 'day' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
+              className={`flex-1 sm:flex-none px-4 py-1.5 text-sm font-medium rounded-full transition-all ${
+                view === 'day' ? 'bg-white shadow-sm text-ink-black' : 'text-slate-gray hover:text-ink-black'
               }`}
             >
               <AlignJustify className="w-4 h-4 mx-auto mb-1 hidden sm:block" />
@@ -129,25 +129,25 @@ export default function CalendarPage() {
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
-            <Button variant="outline" onClick={goToToday} className="flex-1 sm:flex-initial rounded-xl bg-white shadow-sm hover:bg-gray-50">
+            <Button variant="outline" onClick={goToToday} className="flex-1 sm:flex-initial">
               היום
             </Button>
 
-            <div className="flex items-center bg-white border border-gray-200 rounded-xl px-1 py-1 shadow-sm flex-1 sm:flex-initial justify-between">
-              <Button variant="ghost" size="icon" onClick={() => navigateDate(1)} className="h-8 w-8 hover:bg-gray-100 rounded-lg">
+            <div className="flex items-center bg-white border border-dust-taupe rounded-full px-1 py-1 shadow-sm flex-1 sm:flex-initial justify-between">
+              <Button variant="ghost" size="icon" onClick={() => navigateDate(1)} className="h-8 w-8">
                 <span className="text-xl leading-none">&rsaquo;</span>
               </Button>
-              <span className="px-3 text-xs font-bold text-gray-800 min-w-[120px] text-center font-heading">
+              <span className="px-3 text-xs font-bold text-ink-black min-w-[120px] text-center font-heading">
                 {view === 'month' ? monthLabel : view === 'week' ? weekLabel : currentDate.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'short' })}
               </span>
-              <Button variant="ghost" size="icon" onClick={() => navigateDate(-1)} className="h-8 w-8 hover:bg-gray-100 rounded-lg">
+              <Button variant="ghost" size="icon" onClick={() => navigateDate(-1)} className="h-8 w-8">
                 <span className="text-xl leading-none">&lsaquo;</span>
               </Button>
             </div>
           </div>
 
           <motion.div whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
-            <Button variant="default" onClick={() => navigate('/events')} className="w-full justify-center rounded-xl shadow-md">
+            <Button variant="default" onClick={() => navigate('/events')} className="w-full justify-center">
               <Plus className="w-4 h-4 stroke-[2.5] ml-1.5" />
               <span>תזמן אירוע</span>
             </Button>
@@ -158,8 +158,8 @@ export default function CalendarPage() {
       {/* Main Calendar Area */}
       <Card className="p-0 border-0 shadow-none bg-transparent">
         {isLoading ? (
-          <div className="flex items-center justify-center h-[500px] bg-white rounded-2xl border border-gray-100 shadow-sm">
-            <div className="text-gray-400 font-medium animate-pulse flex flex-col items-center">
+          <div className="flex items-center justify-center h-[500px] bg-white rounded-2xl border border-dust-taupe shadow-sm">
+            <div className="text-slate-gray font-medium animate-pulse flex flex-col items-center">
               <CalendarDays className="w-8 h-8 mb-2 opacity-50" />
               טוען יומן...
             </div>

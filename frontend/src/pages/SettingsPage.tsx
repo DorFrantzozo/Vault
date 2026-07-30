@@ -146,32 +146,32 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-8 text-[ink-black] pb-8 font-sans" dir="rtl">
+    <div className="space-y-8 text-ink-black pb-8 font-sans" dir="rtl">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-[ink-black]/10">
+      <div className="flex items-center justify-between pb-4 border-b border-dust-taupe">
         <div>
-          <h1 className="text-3xl font-medium tracking-tight text-[ink-black] font-heading flex items-center gap-2">
-            <Bell className="w-6 h-6 text-[ink-black]" />
+          <h1 className="text-3xl font-medium tracking-tight text-ink-black font-heading flex items-center gap-2">
+            <Bell className="w-6 h-6 text-ink-black" />
             <span>הגדרות התראות ופוש</span>
           </h1>
-          <p className="text-xs text-[slate-gray] mt-1 font-sans">
+          <p className="text-xs text-slate-gray mt-1 font-sans">
             ניהול תזמון ותדירות התראות פוש עבור חיובי מנויים תקופתיים
           </p>
         </div>
       </div>
 
       {isLoading ? (
-        <div className="p-12 text-center text-[slate-gray] text-xs">טוען הגדרות...</div>
+        <div className="p-12 text-center text-slate-gray text-xs">טוען הגדרות...</div>
       ) : (
         <div className="max-w-2xl space-y-6">
           <Card className="p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
             <form onSubmit={handleSaveSettings} className="space-y-6">
               {/* Section 1: Reminder Days Before */}
               <div className="space-y-2">
-                <label className="block text-sm font-bold text-[ink-black] font-heading">
+                <label className="block text-sm font-bold text-ink-black font-heading">
                   מספר ימים לפני התראה
                 </label>
-                <p className="text-xs text-[slate-gray] leading-relaxed">
+                <p className="text-xs text-slate-gray leading-relaxed">
                   כמה ימים לפני מועד החיוב התקופתי של הלקוח תתחיל המערכת לשלוח התראות פוש?
                 </p>
                 <div className="flex items-center space-x-3 space-x-reverse pt-2">
@@ -183,18 +183,18 @@ export default function SettingsPage() {
                     onChange={(e) => setReminderDaysBefore(Number(e.target.value))}
                     className="w-24 text-center font-bold"
                   />
-                  <span className="text-xs text-[slate-gray] font-medium">ימים לפני מועד החיוב</span>
+                  <span className="text-xs text-slate-gray font-medium">ימים לפני מועד החיוב</span>
                 </div>
               </div>
 
-              <div className="h-px bg-[ink-black]/10" />
+              <div className="h-px bg-dust-taupe" />
 
               {/* Section 2: Frequency per Day */}
               <div className="space-y-3">
-                <label className="block text-sm font-bold text-[ink-black] font-heading">
+                <label className="block text-sm font-bold text-ink-black font-heading">
                   תדירות התראות ביום
                 </label>
-                <p className="text-xs text-[slate-gray] leading-relaxed">
+                <p className="text-xs text-slate-gray leading-relaxed">
                   בחר כמה פעמים ביום תשלח המערכת תזכורת פוש במידה והחיוב טרם סומן כשולם
                 </p>
 
@@ -241,12 +241,12 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="h-px bg-[ink-black]/10" />
+              <div className="h-px bg-dust-taupe" />
 
               {/* Section 3: Device Registration */}
               <div className="space-y-3">
-                <label className="block text-sm font-bold text-[ink-black] font-heading flex items-center gap-2">
-                  <Smartphone className="w-4 h-4 text-[ink-black]" />
+                <label className="block text-sm font-bold text-ink-black font-heading flex items-center gap-2">
+                  <Smartphone className="w-4 h-4 text-ink-black" />
                   <span>חיבור מכשיר זה להתראות פוש (PWA)</span>
                 </label>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-canvas-cream/60 border border-ink-black/10">
@@ -322,8 +322,8 @@ export default function SettingsPage() {
           </Card>
 
           {/* Security & System Info Badge */}
-          <div className="flex items-center space-x-2 space-x-reverse text-xs text-[slate-gray] px-2">
-            <ShieldCheck className="w-4 h-4 text-[ink-black] shrink-0" />
+          <div className="flex items-center space-x-2 space-x-reverse text-xs text-slate-gray px-2">
+            <ShieldCheck className="w-4 h-4 text-ink-black shrink-0" />
             <span>ההתראות נשלחות בזמן אמת באמצעות פרוטוקול Web Push תקני וללא תלות בספקי צד ג'.</span>
           </div>
         </div>

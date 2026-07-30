@@ -122,9 +122,9 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
   const today = new Date();
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col h-full">
+    <div className="bg-white rounded-2xl border border-dust-taupe shadow-sm overflow-hidden flex flex-col h-full">
       {/* Days of Week Header */}
-      <div className="grid grid-cols-7 bg-gray-50 border-b border-gray-100 text-center py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">
+      <div className="grid grid-cols-7 bg-canvas-cream border-b border-dust-taupe text-center py-3 text-xs font-bold text-slate-gray uppercase tracking-wider">
         {dayNames.map((name, idx) => (
           <div key={idx} className="truncate">
             {name}
@@ -142,8 +142,8 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
           return (
             <div
               key={idx}
-              className={`min-h-[120px] p-1 sm:p-2 flex flex-col transition-colors border-b border-l border-gray-100 last:border-l-0 ${
-                !isCurrentMonth ? 'bg-gray-50/50' : 'hover:bg-gray-50/30'
+              className={`min-h-[120px] p-1 sm:p-2 flex flex-col transition-colors border-b border-l border-dust-taupe last:border-l-0 ${
+                !isCurrentMonth ? 'bg-canvas-cream/50' : 'hover:bg-canvas-cream/30'
               }`}
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, dayDate)}
@@ -158,16 +158,16 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
                 <span
                   className={`text-xs sm:text-sm font-bold w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center ${
                     isToday
-                      ? 'bg-red-500 text-white shadow-sm'
+                      ? 'bg-ink-black text-white shadow-sm'
                       : isCurrentMonth
-                      ? 'text-gray-700'
-                      : 'text-gray-400'
+                      ? 'text-ink-black'
+                      : 'text-slate-gray'
                   }`}
                 >
                   {dayDate.getDate()}
                 </span>
                 {dayEvents.length > 0 && (
-                  <span className="text-[10px] text-gray-400 font-semibold hidden sm:block">
+                  <span className="text-[10px] text-slate-gray font-semibold hidden sm:block">
                     {dayEvents.length}
                   </span>
                 )}
@@ -195,7 +195,7 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
                 ))}
                 
                 {dayEvents.length > 3 && (
-                  <div className="text-[10px] text-gray-500 font-medium text-center py-0.5 bg-gray-50 rounded-md mt-auto cursor-pointer hover:bg-gray-100 transition-colors">
+                  <div className="text-[10px] text-slate-gray font-medium text-center py-0.5 bg-canvas-cream rounded-md mt-auto cursor-pointer hover:bg-soft-bone transition-colors">
                     +{dayEvents.length - 3} נוספים
                   </div>
                 )}

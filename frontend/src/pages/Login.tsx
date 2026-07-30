@@ -51,24 +51,24 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-canvas-cream text-[ink-black] flex items-center justify-center p-4 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-canvas-cream text-ink-black flex items-center justify-center p-4 relative overflow-hidden font-sans">
       <div className="max-w-md w-full relative z-10 space-y-6">
         <div className="text-center">
-          <div className="inline-flex items-center justify-center p-3.5 bg-lifted-cream border border-[ink-black]/10 rounded-2xl text-[ink-black] shadow-xs mb-3">
-            <ShieldCheck className="w-7 h-7 text-[#CF4500]" />
+          <div className="inline-flex items-center justify-center p-3.5 bg-lifted-cream border border-dust-taupe rounded-2xl text-ink-black shadow-xs mb-3">
+            <ShieldCheck className="w-7 h-7 text-ink-black" />
           </div>
-          <h1 className="text-3xl font-medium text-[ink-black] tracking-tight font-heading">
+          <h1 className="text-3xl font-medium text-ink-black tracking-tight font-heading">
             מערכת ניהול כספים ותפעול
           </h1>
-          <p className="text-[slate-gray] text-xs mt-1">
+          <p className="text-slate-gray text-xs mt-1">
             אזור ניהול פנימי מאובטח
           </p>
         </div>
 
-        <Card className="p-7 space-y-5 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-          <div className="flex items-center justify-between border-b border-[ink-black]/10 pb-3">
-            <div className="flex items-center space-x-2 space-x-reverse text-xs font-bold uppercase tracking-wider text-[ink-black] font-heading">
-              <Sparkles className="w-4 h-4 text-[#CF4500]" />
+        <Card className="p-7 space-y-5 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+          <div className="flex items-center justify-between border-b border-dust-taupe pb-3">
+            <div className="flex items-center space-x-2 space-x-reverse text-xs font-bold uppercase tracking-wider text-ink-black font-heading">
+              <Sparkles className="w-4 h-4 text-ink-black" />
               <span>
                 {isRegisterMode
                   ? "הגדרת חשבון מנהל ראשוני"
@@ -78,18 +78,18 @@ export default function Login() {
           </div>
 
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-[#CF4500]/10 border border-[#CF4500]/20 text-[#CF4500] text-xs font-semibold">
+            <div className="p-3 rounded-xl bg-danger-bg border border-danger/20 text-danger text-xs font-semibold">
               {errorMsg}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-[11px] font-bold text-[slate-gray] uppercase tracking-wider mb-1 font-heading">
+              <label className="block text-[11px] font-bold text-slate-gray uppercase tracking-wider mb-1 font-heading">
                 שם משתמש
               </label>
               <div className="relative">
-                <User className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-[slate-gray] z-10" />
+                <User className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-slate-gray z-10" />
                 <Input
                   type="text"
                   required
@@ -102,11 +102,11 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-[slate-gray] uppercase tracking-wider mb-1 font-heading">
+              <label className="block text-[11px] font-bold text-slate-gray uppercase tracking-wider mb-1 font-heading">
                 סיסמה
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-[slate-gray] z-10" />
+                <Lock className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-slate-gray z-10" />
                 <Input
                   type="password"
                   required
@@ -140,14 +140,14 @@ export default function Login() {
             </Button>
           </form>
 
-          <div className="pt-4 border-t border-[ink-black]/10 text-center">
+          <div className="pt-4 border-t border-dust-taupe text-center">
             <button
               type="button"
               onClick={() => {
                 setIsRegisterMode(!isRegisterMode);
                 setErrorMsg("");
               }}
-              className="text-xs text-[slate-gray] hover:text-[ink-black] font-semibold transition-colors"
+              className="text-xs text-slate-gray hover:text-ink-black font-semibold transition-colors"
             >
               {isRegisterMode
                 ? "כבר יצרת חשבון? לחץ למעבר להתחברות"

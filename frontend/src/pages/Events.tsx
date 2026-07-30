@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Plus, Trash2, CalendarOff, Pencil, CalendarPlus, Search, X } from 'lucide-react';
 import { startOfMonth, endOfMonth, isWithinInterval, parseISO, addMonths } from 'date-fns';
 import {
@@ -25,6 +25,7 @@ import {
   TableHead,
   TableCell,
 } from '../components/ui/table';
+import { Pagination } from '../components/ui/pagination';
 import {
   Dialog,
   DialogContent,
@@ -158,6 +159,19 @@ export default function Events() {
       return matchesSearch && matchesPayment && matchesClient && matchesDate;
     });
   }, [events, searchQuery, paymentFilter, selectedClientName, dateFilter, customStartDate, customEndDate]);
+
+  const PAGE_SIZE = 15;
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(filteredEvents.length / PAGE_SIZE));
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, paymentFilter, selectedClientName, dateFilter, customStartDate, customEndDate]);
+
+  const paginatedEvents = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredEvents.slice(start, start + PAGE_SIZE);
+  }, [filteredEvents, currentPage]);
 
   const clearFilters = () => {
     setSearchQuery('');
@@ -296,7 +310,7 @@ export default function Events() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="חפש לפי לקוח או סוג אירוע..."
-                className="w-full h-10 bg-gray-50 border border-gray-200 rounded-xl pr-9 pl-3 text-xs text-gray-800 placeholder:text-slate-gray focus:outline-none focus:ring-1 focus:ring-gray-300 focus:bg-white transition-all text-right"
+                className="w-full h-10 bg-gray-50 border border-gray-200 rounded-2xl pr-9 pl-3 text-xs text-gray-800 placeholder:text-slate-gray focus:outline-none focus:ring-1 focus:ring-gray-300 focus:bg-white transition-all text-right"
               />
             </div>
 
@@ -304,7 +318,7 @@ export default function Events() {
             <select
               value={paymentFilter}
               onChange={(e) => setPaymentFilter(e.target.value as any)}
-              className="w-full h-10 bg-gray-50 border border-gray-200 rounded-xl px-3 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300 focus:bg-white transition-all"
+              className="w-full h-10 bg-gray-50 border border-gray-200 rounded-2xl px-3 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300 focus:bg-white transition-all"
             >
               <option value="All">כל הסטטוסים (תשלום)</option>
               <option value="Paid">שולם</option>
@@ -315,7 +329,7 @@ export default function Events() {
             <select
               value={selectedClientName}
               onChange={(e) => setSelectedClientName(e.target.value)}
-              className="w-full h-10 bg-gray-50 border border-gray-200 rounded-xl px-3 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300 focus:bg-white transition-all"
+              className="w-full h-10 bg-gray-50 border border-gray-200 rounded-2xl px-3 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300 focus:bg-white transition-all"
             >
               <option value="All">כל הלקוחות</option>
               {uniqueClients.map((name) => (
@@ -329,7 +343,7 @@ export default function Events() {
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value as any)}
-              className="w-full h-10 bg-gray-50 border border-gray-200 rounded-xl px-3 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300 focus:bg-white transition-all"
+              className="w-full h-10 bg-gray-50 border border-gray-200 rounded-2xl px-3 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300 focus:bg-white transition-all"
             >
               <option value="All">כל התאריכים</option>
               <option value="This Month">החודש</option>
@@ -365,7 +379,7 @@ export default function Events() {
                 type="date"
                 value={customStartDate}
                 onChange={(e) => setCustomStartDate(e.target.value)}
-                className="h-10 bg-gray-50 border-gray-200 rounded-xl"
+                className="h-10 bg-gray-50 border-gray-200 rounded-2xl"
               />
             </div>
             <div className="flex-1 flex items-center gap-2">
@@ -374,7 +388,7 @@ export default function Events() {
                 type="date"
                 value={customEndDate}
                 onChange={(e) => setCustomEndDate(e.target.value)}
-                className="h-10 bg-gray-50 border-gray-200 rounded-xl"
+                className="h-10 bg-gray-50 border-gray-200 rounded-2xl"
               />
             </div>
           </motion.div>
@@ -403,25 +417,24 @@ export default function Events() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>תאריך</TableHead>
-                <TableHead>סוג אירוע</TableHead>
                 <TableHead>לקוח</TableHead>
+                <TableHead>תאריך</TableHead>
                 <TableHead>סטטוס</TableHead>
                 <TableHead>תעריף</TableHead>
                 <TableHead>תשלום</TableHead>
                 <TableHead>תיאור</TableHead>
+                <TableHead>סוג אירוע</TableHead>
                 <TableHead className="text-left">ייצוא ליומן / פעולות</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredEvents.map((ev) => (
+              {paginatedEvents.map((ev) => (
                 <TableRow key={ev._id}>
-                  <TableCell className="font-bold text-ink-black">
-                    {new Date(ev.date).toLocaleDateString('he-IL')}
-                  </TableCell>
-                  <TableCell className="font-bold text-ink-black">{getEventTypeHebrew(ev.type)}</TableCell>
                   <TableCell className="font-medium text-slate-gray">
                     {typeof ev.client === 'object' ? ev.client.name : 'ללא לקוח'}
+                  </TableCell>
+                  <TableCell className="font-bold text-ink-black">
+                    {new Date(ev.date).toLocaleDateString('he-IL')}
                   </TableCell>
                   <TableCell>
                     <Badge variant={
@@ -442,6 +455,7 @@ export default function Events() {
                   <TableCell className="text-slate-gray max-w-xs truncate">
                     {ev.description || '-'}
                   </TableCell>
+                  <TableCell className="font-bold text-ink-black">{getEventTypeHebrew(ev.type)}</TableCell>
                   <TableCell className="text-left">
                     <div className="flex items-center justify-end space-x-1.5 space-x-reverse">
                       {/* Apple Calendar iCal Export */}
@@ -478,7 +492,7 @@ export default function Events() {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDelete(ev._id)}
-                        className="hover:text-[#CF4500]"
+                        className="hover:text-danger"
                         title="מחק אירוע"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -489,6 +503,15 @@ export default function Events() {
               ))}
             </TableBody>
           </Table>
+        )}
+
+        {!isLoading && filteredEvents.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            className="border-t border-dust-taupe"
+          />
         )}
       </Card>
 
@@ -503,7 +526,7 @@ export default function Events() {
 
           <form onSubmit={handleSubmit} className="space-y-4 pt-2">
             {modalError && (
-              <div className="p-3 rounded-xl bg-[#CF4500]/10 border border-[#CF4500]/20 text-[#CF4500] text-xs font-semibold">
+              <div className="p-3 rounded-2xl bg-danger-bg border border-danger/20 text-danger text-xs font-semibold">
                 {modalError}
               </div>
             )}
@@ -514,7 +537,7 @@ export default function Events() {
                 <select
                   value={type}
                   onChange={(e) => setType(e.target.value as IServiceEvent['type'])}
-                  className="w-full h-10 bg-white border border-[#141413]/15 rounded-xl px-4 py-2 text-xs text-[#141413] focus:outline-none focus:border-[#141413] transition-all"
+                  className="w-full h-10 bg-white border border-dust-taupe rounded-2xl px-4 py-2 text-xs text-ink-black focus:outline-none focus:border-ink-black transition-all"
                 >
                   <option value="DJ Gig">תקליטנות (DJ)</option>
                   <option value="Software Development">פיתוח תוכנה</option>
@@ -528,7 +551,7 @@ export default function Events() {
                 <select
                   value={clientId}
                   onChange={(e) => setClientId(e.target.value)}
-                  className="w-full h-10 bg-white border border-[#141413]/15 rounded-xl px-4 py-2 text-xs text-[#141413] focus:outline-none focus:border-[#141413] transition-all"
+                  className="w-full h-10 bg-white border border-dust-taupe rounded-2xl px-4 py-2 text-xs text-ink-black focus:outline-none focus:border-ink-black transition-all"
                 >
                   <option value="">-- ללא לקוח --</option>
                   {clients.map((c) => (
@@ -567,7 +590,7 @@ export default function Events() {
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as IServiceEvent['status'])}
-                className="w-full h-10 bg-white border border-[#141413]/15 rounded-xl px-4 py-2 text-xs text-[#141413] focus:outline-none focus:border-[#141413] transition-all"
+                className="w-full h-10 bg-white border border-dust-taupe rounded-2xl px-4 py-2 text-xs text-ink-black focus:outline-none focus:border-ink-black transition-all"
               >
                 <option value="Scheduled">מתוכנן</option>
                 <option value="Completed">הושלם</option>
@@ -582,7 +605,7 @@ export default function Events() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="פרטי האירוע, מיקום, שעות וכו'..."
-                className="w-full bg-white border border-[#141413]/15 rounded-xl px-4 py-2 text-xs text-[#141413] placeholder:text-[#64748B] focus:outline-none focus:border-[#141413] transition-all"
+                className="w-full bg-white border border-dust-taupe rounded-2xl px-4 py-2 text-xs text-ink-black placeholder:text-slate-gray focus:outline-none focus:border-ink-black transition-all"
               />
             </div>
 

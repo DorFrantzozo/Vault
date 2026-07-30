@@ -263,21 +263,21 @@ export default function Dashboard() {
       className="space-y-6 md:space-y-8 text-ink-black pb-8 font-sans"
     >
       {/* Header Row */}
-      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-ink-black/10">
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-dust-taupe">
         <div className="text-right">
-          <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-ink-black font-heading">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink-black font-heading">
             לוח בקרה
           </h1>
           <p className="text-xs sm:text-sm text-slate-gray mt-1 font-sans">
             שלום <span className="font-semibold text-ink-black">{formattedUserName}</span>, סקירה כספית ותפעולית בזמן אמת
           </p>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
           {pushStatus !== 'granted' && (
             <motion.div whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
               <Button variant="outline" onClick={handleEnablePush} className="w-full justify-center">
-                <BellRing className="w-4 h-4 text-[#CF4500] ml-1.5" />
+                <BellRing className="w-4 h-4 text-ink-black ml-1.5" />
                 <span>הפעל התראות</span>
               </Button>
             </motion.div>
@@ -285,7 +285,7 @@ export default function Dashboard() {
 
           <motion.div whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
             <Button variant="outline" onClick={openNewBillingModal} className="w-full justify-center">
-              <Clock className="w-4 h-4 text-[#F37338] ml-1.5" />
+              <Clock className="w-4 h-4 text-ink-black ml-1.5" />
               <span>הוסף מעקב חיוב</span>
             </Button>
           </motion.div>
@@ -302,9 +302,9 @@ export default function Dashboard() {
       {/* Open Gigs Banner */}
       {openGigsCount > 0 && (
         <motion.div variants={itemVariants}>
-          <div className="bg-lifted-cream border border-ink-black/10 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] text-ink-black">
+          <div className="bg-lifted-cream border border-dust-taupe rounded-3xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-[0_4px_24px_rgba(0,0,0,0.04)] text-ink-black">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-canvas-cream text-ink-black rounded-xl border border-ink-black/15 shrink-0">
+              <div className="p-3 bg-canvas-cream text-ink-black rounded-full border border-dust-taupe shrink-0">
                 <Briefcase className="w-5 h-5" />
               </div>
               <div>
@@ -313,7 +313,7 @@ export default function Dashboard() {
               </div>
             </div>
             <Link to="/balances" className="w-full sm:w-auto">
-              <Button variant="outline" className="w-full sm:w-auto bg-canvas-cream text-ink-black border-none rounded-xl">
+              <Button variant="outline" className="w-full sm:w-auto bg-canvas-cream text-ink-black border-none">
                 ניהול חובות
               </Button>
             </Link>
@@ -333,7 +333,7 @@ export default function Dashboard() {
                 {summaryLoading ? '...' : formatCurrency(summary?.monthlyIncome)}
               </h3>
             </div>
-            <TrendingUp className="w-6 h-6 text-emerald-400 shrink-0 group-hover:scale-110 transition-transform" />
+            <TrendingUp className="w-6 h-6 text-success shrink-0 group-hover:scale-110 transition-transform" />
           </Card>
         </motion.div>
 
@@ -347,7 +347,7 @@ export default function Dashboard() {
                 {summaryLoading ? '...' : formatCurrency(summary?.monthlyExpenses)}
               </h3>
             </div>
-            <TrendingDown className="w-6 h-6 text-[#CF4500] shrink-0 group-hover:scale-110 transition-transform" />
+            <TrendingDown className="w-6 h-6 text-danger shrink-0 group-hover:scale-110 transition-transform" />
           </Card>
         </motion.div>
 
@@ -375,7 +375,7 @@ export default function Dashboard() {
                 {summaryLoading ? '...' : formatCurrency(summary?.annualNet)}
               </h3>
             </div>
-            <CreditCard className="w-6 h-6 text-[#F37338] shrink-0 group-hover:scale-110 transition-transform" />
+            <CreditCard className="w-6 h-6 text-success shrink-0 group-hover:scale-110 transition-transform" />
           </Card>
         </motion.div>
       </motion.div>
@@ -405,33 +405,33 @@ export default function Dashboard() {
             <div className="overflow-x-auto scrollbar-none pb-2">
               <div className="min-w-[500px] relative h-64 my-2 pt-14 flex flex-col justify-between">
                 <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-xs text-slate-gray font-mono">
-                  <div className="w-full border-b border-dashed border-ink-black/10 flex justify-between items-center pb-0.5">
+                  <div className="w-full border-b border-dashed border-dust-taupe flex justify-between items-center pb-0.5">
                     <span>{formatCurrency(chartData.maxVal)}</span>
                   </div>
-                  <div className="w-full border-b border-dashed border-ink-black/10 flex justify-between items-center pb-0.5">
+                  <div className="w-full border-b border-dashed border-dust-taupe flex justify-between items-center pb-0.5">
                     <span>{formatCurrency(chartData.maxVal * 0.5)}</span>
                   </div>
-                  <div className="w-full border-b border-ink-black/10 flex justify-between items-center pb-0.5">
+                  <div className="w-full border-b border-dust-taupe flex justify-between items-center pb-0.5">
                     <span>₪0</span>
                   </div>
                 </div>
                 <div className="relative z-10 h-full flex items-end justify-between space-x-1.5 space-x-reverse pt-4">
                   {chartData.months.map((data, idx) => (
                     <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full group relative">
-                      <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all duration-200 bg-lifted-cream text-ink-black text-[10px] p-3 rounded-xl border border-ink-black/15 z-20 whitespace-nowrap shadow-xl pointer-events-none">
-                        <div className="font-bold text-ink-black mb-0.5">{data.label} {data.year}</div>
-                        <div className="text-[#CF4500] font-bold">הכנסות: {formatCurrency(data.income)}</div>
-                        <div className="text-slate-gray font-medium">הוצאות: {formatCurrency(data.expense)}</div>
+                      <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all duration-200 bg-ink-black text-white text-[10px] p-3 rounded-xl z-20 whitespace-nowrap shadow-xl pointer-events-none">
+                        <div className="font-bold text-white mb-0.5">{data.label} {data.year}</div>
+                        <div className="text-white font-bold">הכנסות: {formatCurrency(data.income)}</div>
+                        <div className="text-[#a3a19a] font-medium">הוצאות: {formatCurrency(data.expense)}</div>
                       </div>
                       <div className="w-full flex justify-center space-x-1 space-x-reverse h-full items-end bg-canvas-cream hover:bg-canvas-cream/80 rounded-t-xl px-1 transition-colors">
-                        <div className="w-[45%] bg-[#CF4500] hover:bg-[#CF4500]/95 rounded-t-lg transition-all duration-300 shadow-xs" style={{ height: `${Math.max((data.income / chartData.maxVal) * 100, 3)}%` }} />
+                        <div className="w-[45%] bg-ink-black hover:bg-ink-700 rounded-t-lg transition-all duration-300 shadow-xs" style={{ height: `${Math.max((data.income / chartData.maxVal) * 100, 3)}%` }} />
                         <div className="w-[45%] bg-dust-taupe hover:bg-dust-taupe/80 rounded-t-lg transition-all duration-300" style={{ height: `${Math.max((data.expense / chartData.maxVal) * 100, 3)}%` }} />
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="min-w-[500px] flex justify-between items-center mt-2 text-xs font-bold text-slate-gray border-t border-ink-black/10 pt-2 px-1 font-heading">
+              <div className="min-w-[500px] flex justify-between items-center mt-2 text-xs font-bold text-slate-gray border-t border-dust-taupe pt-2 px-1 font-heading">
                 {chartData.months.map((data, idx) => (
                   <div key={idx} className="flex-1 text-center truncate">{data.label}</div>
                 ))}
@@ -449,7 +449,7 @@ export default function Dashboard() {
       <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Upcoming Billings (5 days) */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-ink-black/10">
+          <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-dust-taupe">
             <CardTitle className="flex items-center space-x-2 space-x-reverse">
               <CreditCard className="w-4.5 h-4.5 text-ink-black" />
               <span>חיובים קרובים (5 ימים)</span>
@@ -462,14 +462,14 @@ export default function Dashboard() {
 
           <CardContent className="pt-4">
             {upcomingBillings.length === 0 ? (
-              <div className="border border-dashed border-ink-black/15 rounded-xl p-6 bg-canvas-cream/50 flex flex-col items-center justify-center space-y-1.5 text-center my-2">
-                <CheckCircle className="w-7 h-7 text-[#CF4500] stroke-[1.5]" />
+              <div className="border border-dashed border-dust-taupe rounded-2xl p-6 bg-canvas-cream/50 flex flex-col items-center justify-center space-y-1.5 text-center my-2">
+                <CheckCircle className="w-7 h-7 text-success stroke-[1.5]" />
                 <p className="text-xs text-slate-gray font-medium">אין חיובים תקופתיים קרובים</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {upcomingBillings.map((b: IRecurringBilling) => (
-                  <div key={b._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-white border border-ink-black/10 hover:border-ink-black/30 transition-all shadow-xs gap-3">
+                  <div key={b._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-white border border-dust-taupe hover:border-ink-black/30 transition-all shadow-xs gap-3">
                     <div>
                       <h4 className="text-xs font-bold text-ink-black">{b.clientName}</h4>
                       <p className="text-[11px] text-slate-gray mt-0.5">
@@ -477,7 +477,7 @@ export default function Dashboard() {
                       </p>
                     </div>
                     <div className="flex items-center space-x-3 space-x-reverse self-end sm:self-auto">
-                      <Badge variant="secondary" className="text-ink-black font-bold text-xs px-3 py-1 border border-ink-black/10 bg-canvas-cream">
+                      <Badge variant="outline" className="text-ink-black font-bold text-xs px-3 py-1 bg-canvas-cream before:hidden">
                         {formatCurrency(b.amount)}
                       </Badge>
                       <Button
@@ -496,7 +496,7 @@ export default function Dashboard() {
 
         {/* Upcoming Events */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-ink-black/10">
+          <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-dust-taupe">
             <CardTitle className="flex items-center space-x-2 space-x-reverse">
               <CalendarDays className="w-4.5 h-4.5 text-ink-black" />
               <span>אירועים קרובים</span>
@@ -509,14 +509,14 @@ export default function Dashboard() {
 
           <CardContent className="pt-4">
             {upcomingEvents.length === 0 ? (
-              <div className="border border-dashed border-ink-black/15 rounded-xl p-6 bg-canvas-cream/50 flex flex-col items-center justify-center space-y-1.5 text-center my-2">
+              <div className="border border-dashed border-dust-taupe rounded-2xl p-6 bg-canvas-cream/50 flex flex-col items-center justify-center space-y-1.5 text-center my-2">
                 <CalendarOff className="w-7 h-7 text-slate-gray stroke-[1.5]" />
                 <p className="text-xs text-slate-gray font-medium">אין אירועים קרובים להצגה</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {upcomingEvents.map((evt: IServiceEvent) => (
-                  <div key={evt._id} className="flex items-center justify-between p-4 rounded-xl bg-white border border-ink-black/10 hover:border-ink-black/30 transition-all shadow-xs">
+                  <div key={evt._id} className="flex items-center justify-between p-4 rounded-2xl bg-white border border-dust-taupe hover:border-ink-black/30 transition-all shadow-xs">
                     <div>
                       <h4 className="text-xs font-bold text-ink-black">
                         {evt.type === 'DJ Gig' ? 'תקליטנות (DJ)' : evt.type === 'Software Development' ? 'פיתוח תוכנה' : evt.type === 'Maintenance' ? 'תחזוקה' : evt.type === 'Consulting' ? 'ייעוץ' : evt.type}
@@ -525,7 +525,7 @@ export default function Dashboard() {
                         לתאריך: {new Date(evt.date).toLocaleDateString('he-IL')} • {typeof evt.client === 'object' ? evt.client.name : 'לקוח כללי'}
                       </p>
                     </div>
-                    <Badge variant={evt.status === 'Scheduled' ? 'dark' as any : 'secondary'}>
+                    <Badge variant={evt.status === 'Scheduled' ? 'scheduled' : 'completed'}>
                       {evt.status === 'Scheduled' ? 'מתוכנן' : 'הושלם'}
                     </Badge>
                   </div>
@@ -541,7 +541,7 @@ export default function Dashboard() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[#CF4500]" />
+              <Clock className="w-4 h-4 text-ink-black" />
               <span>{editingBillingId ? 'עריכת מעקב חיוב' : 'הוספת מעקב חיוב חדש'}</span>
             </DialogTitle>
           </DialogHeader>
@@ -584,7 +584,7 @@ export default function Dashboard() {
                 <select
                   value={bCycle}
                   onChange={(e) => setBCycle(e.target.value as 'Monthly' | 'Yearly')}
-                  className="w-full h-10 bg-canvas-cream border border-ink-black/15 rounded-xl px-4 py-2 text-xs text-ink-black focus:outline-none focus:border-ink-black focus:bg-lifted-cream transition-all"
+                  className="w-full h-10 bg-canvas-cream border border-dust-taupe rounded-2xl px-4 py-2 text-xs text-ink-black focus:outline-none focus:border-ink-black focus:bg-lifted-cream transition-all"
                 >
                   <option value="Monthly">חודשי</option>
                   <option value="Yearly">שנתי</option>
@@ -602,13 +602,13 @@ export default function Dashboard() {
               />
             </div>
 
-            <div className="pt-3 flex justify-between items-center border-t border-ink-black/10">
+            <div className="pt-3 flex justify-between items-center border-t border-dust-taupe">
               {editingBillingId ? (
                 <Button
                   type="button"
                   variant="link"
                   onClick={() => deleteBillingHandler(editingBillingId)}
-                  className="p-0 text-xs text-[#CF4500]"
+                  className="p-0 text-xs text-danger"
                 >
                   מחק חיוב
                 </Button>

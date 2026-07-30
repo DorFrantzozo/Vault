@@ -105,7 +105,7 @@ export const QuickEventModal: React.FC<QuickEventModalProps> = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-md sm:max-w-lg p-6 bg-white rounded-2xl shadow-2xl border-0">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-gray-800">
+          <DialogTitle className="text-xl font-bold text-ink-black">
             {existingEvent ? 'עריכת אירוע' : 'תזמון אירוע מהיר'}
           </DialogTitle>
         </DialogHeader>
@@ -113,11 +113,11 @@ export const QuickEventModal: React.FC<QuickEventModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 mb-1.5 uppercase">סוג אירוע</label>
+              <label className="block text-[11px] font-bold text-slate-gray mb-1.5 uppercase">סוג אירוע</label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as IServiceEvent['type'])}
-                className="w-full h-10 bg-gray-50 border border-gray-200 rounded-xl px-4 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-400/50 transition-all"
+                className="w-full h-10 bg-canvas-cream border border-dust-taupe rounded-2xl px-4 text-sm text-ink-black focus:outline-none focus:ring-2 focus:ring-ink-black/50 transition-all"
               >
                 <option value="DJ Gig">תקליטנות (DJ)</option>
                 <option value="Software Development">פיתוח תוכנה</option>
@@ -127,11 +127,11 @@ export const QuickEventModal: React.FC<QuickEventModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 mb-1.5 uppercase">לקוח</label>
+              <label className="block text-[11px] font-bold text-slate-gray mb-1.5 uppercase">לקוח</label>
               <select
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
-                className="w-full h-10 bg-gray-50 border border-gray-200 rounded-xl px-4 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-400/50 transition-all"
+                className="w-full h-10 bg-canvas-cream border border-dust-taupe rounded-2xl px-4 text-sm text-ink-black focus:outline-none focus:ring-2 focus:ring-ink-black/50 transition-all"
               >
                 <option value="">-- ללא לקוח --</option>
                 {clients.map((c) => (
@@ -143,33 +143,33 @@ export const QuickEventModal: React.FC<QuickEventModalProps> = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 mb-1.5 uppercase">תאריך</label>
+              <label className="block text-[11px] font-bold text-slate-gray mb-1.5 uppercase">תאריך</label>
               <Input
                 type="date"
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="h-10 bg-gray-50 border-gray-200 rounded-xl px-4"
+                className="h-10 bg-canvas-cream border-dust-taupe rounded-2xl px-4"
               />
             </div>
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 mb-1.5 uppercase">שעה</label>
+              <label className="block text-[11px] font-bold text-slate-gray mb-1.5 uppercase">שעה</label>
               <Input
                 type="time"
                 required
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="h-10 bg-gray-50 border-gray-200 rounded-xl px-4"
+                className="h-10 bg-canvas-cream border-dust-taupe rounded-2xl px-4"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-gray-500 mb-1.5 uppercase">סטטוס</label>
+            <label className="block text-[11px] font-bold text-slate-gray mb-1.5 uppercase">סטטוס</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as IServiceEvent['status'])}
-              className="w-full h-10 bg-gray-50 border border-gray-200 rounded-xl px-4 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-400/50 transition-all"
+              className="w-full h-10 bg-canvas-cream border border-dust-taupe rounded-2xl px-4 text-sm text-ink-black focus:outline-none focus:ring-2 focus:ring-ink-black/50 transition-all"
             >
               <option value="Scheduled">מתוכנן</option>
               <option value="Completed">הושלם</option>
@@ -178,28 +178,28 @@ export const QuickEventModal: React.FC<QuickEventModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-gray-500 mb-1.5 uppercase">תיאור</label>
+            <label className="block text-[11px] font-bold text-slate-gray mb-1.5 uppercase">תיאור</label>
             <textarea
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-400/50 transition-all"
+              className="w-full bg-canvas-cream border border-dust-taupe rounded-2xl px-4 py-3 text-sm text-ink-black focus:outline-none focus:ring-2 focus:ring-ink-black/50 transition-all"
             />
           </div>
 
-          <div className="pt-4 flex justify-between items-center border-t border-gray-100 mt-6">
+          <div className="pt-4 flex justify-between items-center border-t border-dust-taupe mt-6">
             {existingEvent ? (
-              <Button type="button" variant="ghost" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={handleDelete} disabled={isDeleting}>
+              <Button type="button" variant="ghost" className="text-danger hover:text-danger hover:bg-danger-bg" onClick={handleDelete} disabled={isDeleting}>
                 <Trash2 className="w-4 h-4 ml-1.5" />
                 מחק אירוע
               </Button>
             ) : <div />}
-            
+
             <div className="flex space-x-2 space-x-reverse">
-              <Button type="button" variant="outline" className="rounded-xl" onClick={onClose}>
+              <Button type="button" variant="outline" onClick={onClose}>
                 ביטול
               </Button>
-              <Button type="submit" disabled={isCreating || isUpdating} className="rounded-xl shadow-md">
+              <Button type="submit" disabled={isCreating || isUpdating}>
                 {isCreating || isUpdating ? 'שומר...' : 'שמור אירוע'}
               </Button>
             </div>

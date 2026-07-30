@@ -3,30 +3,29 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../../lib/utils';
 
 const badgeVariants = cva(
-  'inline-flex items-center rounded-full border px-3 py-0.5 text-[10px] font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-current before:shrink-0",
   {
     variants: {
       variant: {
         default:
-          'border-transparent bg-[#141413] text-white hover:bg-[#262627]',
+          'border-transparent bg-ink-black text-white hover:bg-ink-700',
         secondary:
-          'border-transparent bg-[#F3F0EE] text-[#141413] hover:bg-[#e6e2de]',
+          'border-transparent bg-canvas-cream text-ink-black hover:bg-soft-bone',
         destructive:
-          'border-transparent bg-[#CF4500] text-white hover:bg-[#b03b00]',
-        outline: 'text-[#141413] border-[#141413]/20 bg-white',
-        orange: 'border-transparent bg-[#CF4500]/10 text-[#CF4500] border border-[#CF4500]/20',
+          'border-transparent bg-danger-bg text-danger',
+        outline: 'text-ink-black border-ink-black/20 bg-white before:hidden',
 
-        // Status variants — solid filled
+        // Status variants — soft filled with dot, matching the design system's status chips
         completed:
-          'border-transparent bg-[#16A34A] text-white',
+          'border-transparent bg-success-bg text-success',
         scheduled:
-          'border-transparent bg-[#EA580C] text-white',
+          'border-transparent bg-info-bg text-info',
         cancelled:
-          'border-transparent bg-[#64748B] text-white',
+          'border-transparent bg-canvas-cream text-slate-gray',
         paid:
-          'border-transparent bg-[#16A34A] text-white',
+          'border-transparent bg-success-bg text-success',
         unpaid:
-          'border-transparent bg-[#DC2626] text-white',
+          'border-transparent bg-danger-bg text-danger',
       },
     },
     defaultVariants: {
