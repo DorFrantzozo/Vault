@@ -6,6 +6,8 @@ import {
   useCreateEventMutation,
   useUpdateEventMutation,
   useDeleteEventMutation,
+  useMarkEventPaidMutation,
+  useMarkEventUnpaidMutation,
 } from '../store/api/eventApi.js';
 import { useGetClientsQuery } from '../store/api/clientApi.js';
 import { IServiceEvent } from '../types/api.js';
@@ -80,16 +82,14 @@ export default function Events() {
   const [amount, setAmount] = useState<string>('');
   const [isPaid, setIsPaid] = useState(false);
   const [originalIsPaid, setOriginalIsPaid] = useState(false);
-  // originalIsPaid is set/reset here; Task 5's handleSubmit reads it to decide
-  // whether to call the mark-paid/mark-unpaid mutations. Referenced here only
-  // to satisfy noUnusedLocals until that wiring lands.
-  void originalIsPaid;
 
   const { data: eventsData, isLoading } = useGetEventsQuery();
   const { data: clientsData } = useGetClientsQuery();
 
   const [createEvent, { isLoading: isCreating }] = useCreateEventMutation();
   const [updateEvent, { isLoading: isUpdating }] = useUpdateEventMutation();
+  const [markEventPaid] = useMarkEventPaidMutation();
+  const [markEventUnpaid] = useMarkEventUnpaidMutation();
   const [deleteEvent] = useDeleteEventMutation();
 
   const events = eventsData?.data?.events || [];
@@ -218,6 +218,18 @@ export default function Events() {
 
     try {
       if (editingEventId) {
+        const paidChanged = isPaid !== originalIsPaid;
+
+        if (paidChanged && !isPaid) {
+          const isConfirmed = await confirm({
+            title: 'ביטול סימון תשלום',
+            message: `פעולה זו תמחק את תנועת ההכנסה בסך ₪${(Number(amount) || 0).toLocaleString()} מתאריך ${new Date(date).toLocaleDateString('he-IL')} מספר התנועות, ותסמן את האירוע כטרם שולם. לא ניתן לשחזר את התנועה לאחר המחיקה.`,
+            confirmText: 'בטל תשלום ומחק תנועה',
+            type: 'danger',
+          });
+          if (!isConfirmed) return;
+        }
+
         await updateEvent({
           id: editingEventId,
           client: clientId,
@@ -227,6 +239,15 @@ export default function Events() {
           status,
           amount: Number(amount) || 0,
         }).unwrap();
+
+        if (paidChanged) {
+          if (isPaid) {
+            await markEventPaid(editingEventId).unwrap();
+          } else {
+            await markEventUnpaid(editingEventId).unwrap();
+          }
+        }
+
         setIsModalOpen(false);
         resetForm();
       } else {
