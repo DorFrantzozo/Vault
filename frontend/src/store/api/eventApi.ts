@@ -1,5 +1,5 @@
 import { baseApi } from './baseApi.js';
-import { IServiceEvent } from '../../types/api.js';
+import { IServiceEvent, ITransaction } from '../../types/api.js';
 
 export const eventApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -80,6 +80,26 @@ export const eventApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['ServiceEvent', 'Transaction'],
     }),
+    markEventPaid: builder.mutation<
+      { status: string; data: { event: IServiceEvent; transaction: ITransaction } },
+      string
+    >({
+      query: (id) => ({
+        url: `/events/${id}/mark-paid`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['ServiceEvent', 'Transaction'],
+    }),
+    markEventUnpaid: builder.mutation<
+      { status: string; data: { event: IServiceEvent; deletedCount: number } },
+      string
+    >({
+      query: (id) => ({
+        url: `/events/${id}/mark-unpaid`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['ServiceEvent', 'Transaction'],
+    }),
   }),
 });
 
@@ -89,4 +109,6 @@ export const {
   useUpdateEventMutation,
   useDeleteEventMutation,
   useMarkClientEventsAsPaidMutation,
+  useMarkEventPaidMutation,
+  useMarkEventUnpaidMutation,
 } = eventApi;
