@@ -78,6 +78,12 @@ export default function Events() {
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<IServiceEvent['status']>('Scheduled');
   const [amount, setAmount] = useState<string>('');
+  const [isPaid, setIsPaid] = useState(false);
+  const [originalIsPaid, setOriginalIsPaid] = useState(false);
+  // originalIsPaid is set/reset here; Task 5's handleSubmit reads it to decide
+  // whether to call the mark-paid/mark-unpaid mutations. Referenced here only
+  // to satisfy noUnusedLocals until that wiring lands.
+  void originalIsPaid;
 
   const { data: eventsData, isLoading } = useGetEventsQuery();
   const { data: clientsData } = useGetClientsQuery();
@@ -201,6 +207,8 @@ export default function Events() {
     setDescription(ev.description || '');
     setStatus(ev.status);
     setAmount(ev.amount ? ev.amount.toString() : '0');
+    setIsPaid(ev.isPaid);
+    setOriginalIsPaid(ev.isPaid);
     setIsModalOpen(true);
   };
 
@@ -279,6 +287,8 @@ export default function Events() {
     setDescription('');
     setStatus('Scheduled');
     setAmount('');
+    setIsPaid(false);
+    setOriginalIsPaid(false);
     setEditingEventId(null);
   };
 
@@ -651,7 +661,8 @@ export default function Events() {
                 <select
                   value={clientId}
                   onChange={(e) => setClientId(e.target.value)}
-                  className="w-full h-10 bg-white border border-dust-taupe rounded-2xl px-4 py-2 text-xs text-ink-black focus:outline-none focus:border-ink-black transition-all"
+                  disabled={isPaid}
+                  className="w-full h-10 bg-white border border-dust-taupe rounded-2xl px-4 py-2 text-xs text-ink-black focus:outline-none focus:border-ink-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <option value="">-- ללא לקוח --</option>
                   {clients.map((c) => (
@@ -671,6 +682,7 @@ export default function Events() {
                   required
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
+                  disabled={isPaid}
                 />
               </div>
 
@@ -681,6 +693,7 @@ export default function Events() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="1500"
+                  disabled={isPaid}
                 />
               </div>
             </div>
@@ -697,6 +710,25 @@ export default function Events() {
                 <option value="Cancelled">בוטל</option>
               </select>
             </div>
+
+            {editingEventId && (
+              <div>
+                <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">סטטוס תשלום</label>
+                <SegmentedControl<'paid' | 'unpaid'>
+                  value={isPaid ? 'paid' : 'unpaid'}
+                  onChange={(v) => setIsPaid(v === 'paid')}
+                  options={[
+                    { value: 'unpaid', label: 'טרם שולם' },
+                    { value: 'paid', label: 'שולם' },
+                  ]}
+                />
+                {isPaid && (
+                  <p className="text-[10px] text-slate-gray mt-1.5">
+                    בטל את סימון התשלום כדי לערוך תאריך, סכום או לקוח.
+                  </p>
+                )}
+              </div>
+            )}
 
             <div>
               <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">תיאור / הערות</label>
