@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Plus, Trash2, CalendarOff, Pencil, CalendarPlus, Search, X } from 'lucide-react';
+import { Plus, Trash2, CalendarOff, Pencil, CalendarPlus, Search, X, List, CalendarDays, Clock } from 'lucide-react';
 import { startOfMonth, endOfMonth, isWithinInterval, parseISO, addMonths } from 'date-fns';
 import {
   useGetEventsQuery,
@@ -26,12 +26,16 @@ import {
   TableCell,
 } from '../components/ui/table';
 import { Pagination } from '../components/ui/pagination';
+import { SegmentedControl } from '../components/ui/segmented-control';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '../components/ui/dialog';
+import { EventsCalendarPanel } from '../components/events/EventsCalendarPanel';
+
+type ViewMode = 'list' | 'calendar';
 
 const getEventTypeHebrew = (t: IServiceEvent['type']) => {
   switch (t) {
@@ -63,6 +67,7 @@ const getStatusHebrew = (s: IServiceEvent['status']) => {
 
 export default function Events() {
   const { confirm } = useModal();
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [modalError, setModalError] = useState<string | null>(null);
@@ -280,17 +285,27 @@ export default function Events() {
   return (
     <div className="space-y-8 text-ink-black pb-8 font-sans">
       {/* Header Row */}
-      <div className="flex items-center justify-between pb-4 border-b border-ink-black/10">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-ink-black/10">
         <div className="text-right">
           <h1 className="text-3xl font-medium tracking-tight text-ink-black font-heading flex items-center gap-2">
             <span>יומן אירועים ותפעול</span>
           </h1>
           <p className="text-xs text-slate-gray mt-1 font-sans">תזמון, עריכה, ניהול וסנכרון אירועים ל-Apple Calendar ו-Google</p>
         </div>
-        <Button variant="default" onClick={openCreateModal}>
-          <Plus className="w-4 h-4 stroke-[2.5] ml-1.5" />
-          <span>תזמן אירוע</span>
-        </Button>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <SegmentedControl<ViewMode>
+            value={viewMode}
+            onChange={setViewMode}
+            options={[
+              { value: 'list', label: 'תצוגת רשימה', icon: List },
+              { value: 'calendar', label: 'תצוגת לוח שנה', icon: CalendarDays },
+            ]}
+          />
+          <Button variant="default" onClick={openCreateModal} className="justify-center">
+            <Plus className="w-4 h-4 stroke-[2.5] ml-1.5" />
+            <span>תזמן אירוע</span>
+          </Button>
+        </div>
       </div>
 
       {/* Advanced Filtering & Search Bar */}
@@ -395,7 +410,7 @@ export default function Events() {
         )}
       </div>
 
-      {/* Table / Empty State Container */}
+      {viewMode === 'list' && (
       <Card className="overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
         {isLoading ? (
           <div className="p-16 text-center text-slate-gray text-xs font-medium">טוען אירועים...</div>
@@ -414,6 +429,8 @@ export default function Events() {
             </div>
           </div>
         ) : (
+          <>
+          <div className="hidden md:block">
           <Table>
             <TableHeader>
               <TableRow>
@@ -503,6 +520,84 @@ export default function Events() {
               ))}
             </TableBody>
           </Table>
+          </div>
+          <div className="md:hidden p-4 space-y-3">
+            {paginatedEvents.map((ev) => (
+              <div key={ev._id} className="rounded-xl border border-dust-taupe shadow-sm bg-white p-4 space-y-3">
+                {/* Card Header */}
+                <div className="flex items-start justify-between gap-2">
+                  <span className="font-bold text-ink-black text-sm truncate">
+                    {typeof ev.client === 'object' ? ev.client.name : 'ללא לקוח'}
+                  </span>
+                  <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                    <Badge variant={
+                      ev.status === 'Scheduled' ? 'scheduled' :
+                      ev.status === 'Completed' ? 'completed' : 'cancelled'
+                    }>
+                      {getStatusHebrew(ev.status)}
+                    </Badge>
+                    <Badge variant={ev.isPaid ? 'paid' : 'unpaid'}>
+                      {ev.isPaid ? 'שולם' : 'טרם שולם'}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Card Body */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-gray">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>{new Date(ev.date).toLocaleDateString('he-IL')}</span>
+                  </div>
+                  <span className="text-ink-black font-bold font-heading">
+                    {ev.amount ? `₪${ev.amount.toLocaleString()}` : '-'}
+                  </span>
+                </div>
+                <div className="text-xs text-slate-gray">
+                  <span className="font-semibold text-ink-black">{getEventTypeHebrew(ev.type)}</span>
+                  {ev.description && <span> · {ev.description}</span>}
+                </div>
+
+                {/* Card Footer */}
+                <div className="flex items-center justify-end gap-2 pt-1 border-t border-ink-black/10 mt-1">
+                  <Button
+                    variant="outline"
+                    size="icon-lg"
+                    onClick={() => downloadAppleIcsFile(ev)}
+                    title="ייצא ל-Apple Calendar / iCal"
+                  >
+                    <CalendarPlus className="w-4 h-4" />
+                  </Button>
+                  <a
+                    href={getGoogleCalendarUrl(ev)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="h-11 w-11 flex items-center justify-center rounded-full border border-ink-black/15 bg-lifted-cream text-slate-gray hover:text-ink-black hover:bg-canvas-cream transition-colors shrink-0"
+                    title="ייצא ל-Google Calendar"
+                  >
+                    <CalendarPlus className="w-4 h-4" />
+                  </a>
+                  <Button
+                    variant="ghost"
+                    size="icon-lg"
+                    onClick={() => openEditModal(ev)}
+                    title="ערוך אירוע"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-lg"
+                    onClick={() => handleDelete(ev._id)}
+                    className="hover:text-danger"
+                    title="מחק אירוע"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+          </>
         )}
 
         {!isLoading && filteredEvents.length > 0 && (
@@ -514,6 +609,11 @@ export default function Events() {
           />
         )}
       </Card>
+      )}
+
+      {viewMode === 'calendar' && (
+        <EventsCalendarPanel events={filteredEvents} isLoading={isLoading} />
+      )}
 
       {/* Shadcn Dialog */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>

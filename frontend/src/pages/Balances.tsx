@@ -272,7 +272,7 @@ export default function Balances() {
                       const isCompleted = ev.status === 'Completed';
                       const isSelected = selectedEventIds.has(ev._id);
                       return (
-                        <div key={ev._id} className="flex justify-between items-center text-xs p-3 rounded-xl bg-canvas-cream/50 border border-dust-taupe/70 hover:bg-canvas-cream transition-colors">
+                        <div key={ev._id} className="flex flex-wrap items-center justify-between gap-y-2 text-xs p-3 rounded-xl bg-canvas-cream/50 border border-dust-taupe/70 hover:bg-canvas-cream transition-colors">
                           <div className="flex-1 flex items-center pr-1 min-w-0">
                             
                             <div className="w-6 shrink-0 flex items-center justify-center ml-2">
@@ -305,11 +305,11 @@ export default function Balances() {
                               {new Date(ev.date).toLocaleDateString('he-IL')}
                             </span>
                             <span className="text-slate-gray mx-2 shrink-0">•</span>
-                            <span className={`text-slate-gray truncate max-w-[120px] ${!isCompleted && 'opacity-60'}`} title={ev.description || ev.type}>
+                            <span className={`text-slate-gray truncate max-w-[90px] sm:max-w-[140px] ${!isCompleted && 'opacity-60'}`} title={ev.description || ev.type}>
                               {ev.description || ev.type}
                             </span>
                           </div>
-                          <div className="flex items-center space-x-2 space-x-reverse shrink-0">
+                          <div className="flex items-center space-x-2 space-x-reverse shrink-0 w-full sm:w-auto justify-end mt-1 sm:mt-0">
                             <span className="font-bold text-ink-black">₪{ev.amount.toLocaleString()}</span>
                             {isEditMode && (
                               <Button

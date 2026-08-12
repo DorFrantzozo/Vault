@@ -9,6 +9,7 @@ import {
   Users,
   Search,
   Paperclip,
+  Clock,
 } from "lucide-react";
 import {
   useGetTransactionsQuery,
@@ -372,6 +373,8 @@ export default function Ledger() {
             </div>
           </div>
         ) : (
+          <>
+          <div className="hidden md:block">
           <Table>
             <TableHeader>
               <TableRow>
@@ -452,6 +455,78 @@ export default function Ledger() {
               ))}
             </TableBody>
           </Table>
+          </div>
+          <div className="md:hidden p-4 space-y-3">
+            {paginatedTransactions.map((t) => (
+              <div key={t._id} className="rounded-xl border border-dust-taupe shadow-sm bg-white p-4 space-y-3">
+                {/* Card Header */}
+                <div className="flex items-start justify-between gap-2">
+                  <span className="font-bold text-ink-black text-sm truncate">
+                    {typeof t.client === "object" && t.client?.name
+                      ? t.client.name
+                      : getServiceTypeHebrew(t.serviceType)}
+                  </span>
+                  <Badge variant={t.type === "Income" ? "completed" : "unpaid"}>
+                    {t.type === "Income" ? "הכנסה" : "הוצאה"}
+                  </Badge>
+                </div>
+
+                {/* Card Body */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-gray">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>{new Date(t.date).toLocaleDateString("he-IL")}</span>
+                  </div>
+                  <span
+                    className={`font-bold font-heading whitespace-nowrap ${t.type === "Income" ? "text-success" : "text-danger"}`}
+                  >
+                    {t.type === "Income" ? "+" : "-"}₪{t.amount.toLocaleString()}
+                  </span>
+                </div>
+                <div className="text-xs text-slate-gray space-y-0.5">
+                  {typeof t.client === "object" && t.client?.name && (
+                    <div>
+                      <span className="font-semibold text-ink-black">{getServiceTypeHebrew(t.serviceType)}</span>
+                    </div>
+                  )}
+                  {t.notes && <div className="truncate">{t.notes}</div>}
+                  {t.attachmentUrl && (
+                    <a
+                      href={t.attachmentUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-ink-black hover:underline font-semibold"
+                    >
+                      <Paperclip className="w-3.5 h-3.5" />
+                      <span>מסמך</span>
+                    </a>
+                  )}
+                </div>
+
+                {/* Card Footer */}
+                <div className="flex items-center justify-end gap-2 pt-1 border-t border-ink-black/10 mt-1">
+                  <Button
+                    variant="ghost"
+                    size="icon-lg"
+                    onClick={() => handleOpenEditModal(t)}
+                    title="ערוך תנועה"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-lg"
+                    onClick={() => handleDelete(t._id)}
+                    className="hover:text-danger"
+                    title="מחק תנועה"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+          </>
         )}
 
         {!isLoading && filteredTransactions.length > 0 && (

@@ -2,7 +2,6 @@ import React from "react";
 import {NavLink} from "react-router-dom";
 import {
   LayoutDashboard,
-  CalendarDays,
   Receipt,
   Users,
   Calendar,
@@ -48,7 +47,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {name: "חיובים קבועים", path: "/recurring", icon: CreditCard},
     {name: "ספר תנועות", path: "/ledger", icon: Receipt},
     {name: "לקוחות", path: "/clients", icon: Users},
-    {name: "לוח שנה", path: "/calendar", icon: CalendarDays},
     {name: "יתרות וחובות", path: "/balances", icon: Briefcase},
   ];
 

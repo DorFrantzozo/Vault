@@ -7,7 +7,6 @@ import { DashboardLayout } from './components/layout/DashboardLayout.js';
 
 const Login = React.lazy(() => import('./pages/Login.js'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard.js'));
-const CalendarPage = React.lazy(() => import('./pages/CalendarPage.js'));
 const Ledger = React.lazy(() => import('./pages/Ledger.js'));
 const Clients = React.lazy(() => import('./pages/Clients.js'));
 const Events = React.lazy(() => import('./pages/Events.js'));
@@ -36,7 +35,7 @@ export default function App() {
                 <Route element={<DashboardLayout />}>
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/calendar" element={<CalendarPage />} />
+                  <Route path="/calendar" element={<Navigate to="/events" replace />} />
                   <Route path="/ledger" element={<Ledger />} />
                   <Route path="/clients" element={<Clients />} />
                   <Route path="/events" element={<Events />} />
