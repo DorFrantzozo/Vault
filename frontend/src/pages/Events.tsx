@@ -82,6 +82,8 @@ export default function Events() {
   const [amount, setAmount] = useState<string>('');
   const [isPaid, setIsPaid] = useState(false);
   const [originalIsPaid, setOriginalIsPaid] = useState(false);
+  const [originalAmount, setOriginalAmount] = useState<string>('');
+  const [originalDate, setOriginalDate] = useState('');
 
   const { data: eventsData, isLoading } = useGetEventsQuery();
   const { data: clientsData } = useGetClientsQuery();
@@ -209,6 +211,8 @@ export default function Events() {
     setAmount(ev.amount ? ev.amount.toString() : '0');
     setIsPaid(ev.isPaid);
     setOriginalIsPaid(ev.isPaid);
+    setOriginalAmount(ev.amount ? ev.amount.toString() : '0');
+    setOriginalDate(new Date(ev.date).toISOString().split('T')[0]);
     setIsModalOpen(true);
   };
 
@@ -223,7 +227,7 @@ export default function Events() {
         if (paidChanged && !isPaid) {
           const isConfirmed = await confirm({
             title: 'ביטול סימון תשלום',
-            message: `פעולה זו תמחק את תנועת ההכנסה בסך ₪${(Number(amount) || 0).toLocaleString()} מתאריך ${new Date(date).toLocaleDateString('he-IL')} מספר התנועות, ותסמן את האירוע כטרם שולם. לא ניתן לשחזר את התנועה לאחר המחיקה.`,
+            message: `פעולה זו תמחק את תנועת ההכנסה בסך ₪${(Number(originalAmount) || 0).toLocaleString()} מתאריך ${new Date(originalDate).toLocaleDateString('he-IL')} מספר התנועות, ותסמן את האירוע כטרם שולם. לא ניתן לשחזר את התנועה לאחר המחיקה.`,
             confirmText: 'בטל תשלום ומחק תנועה',
             type: 'danger',
           });
@@ -310,6 +314,8 @@ export default function Events() {
     setAmount('');
     setIsPaid(false);
     setOriginalIsPaid(false);
+    setOriginalAmount('');
+    setOriginalDate('');
     setEditingEventId(null);
   };
 
