@@ -75,16 +75,16 @@ export const markEventsAsPaidForClient = async (req: Request, res: Response, nex
   try {
     const clientId = req.params.clientId;
     const { eventIds } = req.body || {};
-    
+
     // Ensure eventIds is an array and not empty, to strictly only collect selected events
     if (!eventIds || !Array.isArray(eventIds) || eventIds.length === 0) {
       return next(new AppError('No specific events selected for collection', 400));
     }
 
-    const query = { 
-      client: clientId, 
-      isPaid: false, 
-      _id: { $in: eventIds } 
+    const query = {
+      client: clientId,
+      isPaid: false,
+      _id: { $in: eventIds }
     };
 
     const unpaidEvents = await ServiceEvent.find(query);
@@ -121,6 +121,44 @@ export const markEventsAsPaidForClient = async (req: Request, res: Response, nex
         eventsUpdated: unpaidEvents.length,
         totalAmount,
       }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const markEventPaid = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const event = await ServiceEvent.findById(req.params.id);
+    if (!event) {
+      return next(new AppError('Service event not found', 404));
+    }
+
+    if (event.isPaid) {
+      return next(new AppError('Event is already marked as paid', 400));
+    }
+
+    if (!event.amount || event.amount <= 0) {
+      return next(new AppError('Cannot mark a zero-amount event as paid', 400));
+    }
+
+    const transaction = await Transaction.create({
+      type: 'Income',
+      amount: event.amount,
+      date: event.date,
+      client: event.client,
+      serviceType: event.type,
+      relatedEvent: event._id,
+      notes: `גביית תשלום עבור ${event.description || event.type} מיום ${new Date(event.date).toLocaleDateString('he-IL')}`,
+    });
+
+    event.isPaid = true;
+    await event.save();
+    const populatedEvent = await event.populate('client', 'name type color');
+
+    res.status(200).json({
+      status: 'success',
+      data: { event: populatedEvent, transaction },
     });
   } catch (error) {
     next(error);

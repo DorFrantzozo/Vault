@@ -6,6 +6,7 @@ import {
   updateEvent,
   deleteEvent,
   markEventsAsPaidForClient,
+  markEventPaid,
 } from '../controllers/eventController.js';
 import { protect } from '../middlewares/authMiddleware.js';
 import { validateRequest } from '../middlewares/validateRequest.js';
@@ -24,5 +25,6 @@ router
   .delete(deleteEvent);
 
 router.post('/client/:clientId/mark-paid', markEventsAsPaidForClient);
+router.post('/:id/mark-paid', markEventPaid);
 
 export default router;
