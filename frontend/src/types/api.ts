@@ -19,7 +19,7 @@ export interface IClient {
 
 export interface IServiceEvent {
   _id: string;
-  client: IClient | string;
+  client: IClient | string | null;
   type: 'DJ Gig' | 'Software Development' | 'Maintenance' | 'Consulting';
   date: string;
   description?: string;

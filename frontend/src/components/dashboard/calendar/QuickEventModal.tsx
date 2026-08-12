@@ -38,7 +38,7 @@ export const QuickEventModal: React.FC<QuickEventModalProps> = ({
 
   useEffect(() => {
     if (existingEvent) {
-      setClientId(typeof existingEvent.client === 'object' ? existingEvent.client._id : existingEvent.client || '');
+      setClientId(existingEvent.client && typeof existingEvent.client === 'object' ? existingEvent.client._id : existingEvent.client || '');
       setType(existingEvent.type);
       
       const evDate = parseSafeDate(existingEvent.date);

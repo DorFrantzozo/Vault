@@ -205,7 +205,7 @@ export default function Events() {
   const openEditModal = (ev: IServiceEvent) => {
     setModalError(null);
     setEditingEventId(ev._id);
-    setClientId(typeof ev.client === 'object' ? ev.client._id : ev.client || '');
+    setClientId(ev.client && typeof ev.client === 'object' ? ev.client._id : ev.client || '');
     setType(ev.type);
     setDate(new Date(ev.date).toISOString().split('T')[0]);
     setDescription(ev.description || '');
@@ -493,7 +493,7 @@ export default function Events() {
               {paginatedEvents.map((ev) => (
                 <TableRow key={ev._id}>
                   <TableCell className="font-medium text-slate-gray">
-                    {typeof ev.client === 'object' ? ev.client.name : 'ללא לקוח'}
+                    {ev.client && typeof ev.client === 'object' ? ev.client.name : 'ללא לקוח'}
                   </TableCell>
                   <TableCell className="font-bold text-ink-black">
                     {new Date(ev.date).toLocaleDateString('he-IL')}
@@ -572,7 +572,7 @@ export default function Events() {
                 {/* Card Header */}
                 <div className="flex items-start justify-between gap-2">
                   <span className="font-bold text-ink-black text-sm truncate">
-                    {typeof ev.client === 'object' ? ev.client.name : 'ללא לקוח'}
+                    {ev.client && typeof ev.client === 'object' ? ev.client.name : 'ללא לקוח'}
                   </span>
                   <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
                     <Badge variant={

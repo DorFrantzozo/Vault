@@ -26,11 +26,11 @@ export default function Balances() {
   const { totalOutstanding, totalScheduled, debtorCount } = useMemo(() => {
     let outstanding = 0;
     let scheduled = 0;
-    const debtors = new Set<string>();
+    const debtors = new Set<string | null>();
 
     events.forEach(ev => {
       if (!ev.isPaid && ev.amount > 0) {
-        const clientId = typeof ev.client === 'object' ? ev.client._id : ev.client;
+        const clientId = ev.client && typeof ev.client === 'object' ? ev.client._id : ev.client;
         if (ev.status === 'Completed') {
           outstanding += ev.amount;
           debtors.add(clientId);
@@ -49,13 +49,13 @@ export default function Balances() {
 
   // Compute Client Specific Balances
   const openBalances = useMemo(() => {
-    const balances = new Map<string, { clientName: string; clientColor?: string; totalAmount: number; completedCount: number; events: IServiceEvent[] }>();
+    const balances = new Map<string | null, { clientName: string; clientColor?: string; totalAmount: number; completedCount: number; events: IServiceEvent[] }>();
 
     events.forEach(ev => {
       if (!ev.isPaid && ev.amount > 0) {
-        const clientId = typeof ev.client === 'object' ? ev.client._id : ev.client;
-        const clientName = typeof ev.client === 'object' ? ev.client.name : 'לקוח לא ידוע';
-        const clientColor = typeof ev.client === 'object' ? ev.client.color : undefined;
+        const clientId = ev.client && typeof ev.client === 'object' ? ev.client._id : ev.client;
+        const clientName = ev.client && typeof ev.client === 'object' ? ev.client.name : 'לקוח לא ידוע';
+        const clientColor = ev.client && typeof ev.client === 'object' ? ev.client.color : undefined;
         
         if (!balances.has(clientId)) {
           balances.set(clientId, { clientName, clientColor, totalAmount: 0, completedCount: 0, events: [] });
@@ -345,8 +345,8 @@ export default function Balances() {
                                 ? 'shadow-sm hover:shadow-md'
                                 : 'opacity-50 cursor-not-allowed bg-white text-slate-gray'
                             }`}
-                            onClick={() => handleMarkPaid(b.clientId, b.clientName, selectedEvents)}
-                            disabled={isMarking || !hasSelected}
+                            onClick={() => b.clientId && handleMarkPaid(b.clientId, b.clientName, selectedEvents)}
+                            disabled={isMarking || !hasSelected || !b.clientId}
                           >
                             <CreditCard className="w-4 h-4 ml-1.5" />
                             <span>

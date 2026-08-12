@@ -522,7 +522,7 @@ export default function Dashboard() {
                         {evt.type === 'DJ Gig' ? 'תקליטנות (DJ)' : evt.type === 'Software Development' ? 'פיתוח תוכנה' : evt.type === 'Maintenance' ? 'תחזוקה' : evt.type === 'Consulting' ? 'ייעוץ' : evt.type}
                       </h4>
                       <p className="text-[11px] text-slate-gray mt-0.5">
-                        לתאריך: {new Date(evt.date).toLocaleDateString('he-IL')} • {typeof evt.client === 'object' ? evt.client.name : 'לקוח כללי'}
+                        לתאריך: {new Date(evt.date).toLocaleDateString('he-IL')} • {evt.client && typeof evt.client === 'object' ? evt.client.name : 'לקוח כללי'}
                       </p>
                     </div>
                     <Badge variant={evt.status === 'Scheduled' ? 'scheduled' : 'completed'}>
