@@ -90,9 +90,10 @@ export default function Events() {
 
   const [createEvent, { isLoading: isCreating }] = useCreateEventMutation();
   const [updateEvent, { isLoading: isUpdating }] = useUpdateEventMutation();
-  const [markEventPaid] = useMarkEventPaidMutation();
-  const [markEventUnpaid] = useMarkEventUnpaidMutation();
+  const [markEventPaid, { isLoading: isMarkingPaid }] = useMarkEventPaidMutation();
+  const [markEventUnpaid, { isLoading: isMarkingUnpaid }] = useMarkEventUnpaidMutation();
   const [deleteEvent] = useDeleteEventMutation();
+  const isSavingEvent = isCreating || isUpdating || isMarkingPaid || isMarkingUnpaid;
 
   const events = eventsData?.data?.events || [];
   const clients = clientsData?.data?.clients || [];
@@ -202,6 +203,7 @@ export default function Events() {
   };
 
   const openEditModal = (ev: IServiceEvent) => {
+    setModalError(null);
     setEditingEventId(ev._id);
     setClientId(typeof ev.client === 'object' ? ev.client._id : ev.client || '');
     setType(ev.type);
@@ -232,6 +234,11 @@ export default function Events() {
             type: 'danger',
           });
           if (!isConfirmed) return;
+        }
+
+        if (paidChanged && isPaid && (Number(amount) || 0) <= 0) {
+          setModalError('לא ניתן לסמן אירוע כשולם כאשר הסכום הוא אפס. יש להזין סכום תקין לפני הסימון.');
+          return;
         }
 
         await updateEvent({
@@ -306,6 +313,7 @@ export default function Events() {
   };
 
   const resetForm = () => {
+    setModalError(null);
     setClientId('');
     setType('DJ Gig');
     setDate(new Date().toISOString().split('T')[0]);
@@ -778,9 +786,9 @@ export default function Events() {
               </Button>
               <Button
                 type="submit"
-                disabled={isCreating || isUpdating}
+                disabled={isSavingEvent}
               >
-                {isCreating || isUpdating ? 'שומר...' : editingEventId ? 'עדכן אירוע' : 'תזמן אירוע'}
+                {isSavingEvent ? 'שומר...' : editingEventId ? 'עדכן אירוע' : 'תזמן אירוע'}
               </Button>
             </div>
           </form>
