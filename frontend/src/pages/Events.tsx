@@ -752,16 +752,15 @@ export default function Events() {
                 <SegmentedControl<'paid' | 'unpaid'>
                   value={isPaid ? 'paid' : 'unpaid'}
                   onChange={(v) => setIsPaid(v === 'paid')}
+                  className="w-fit"
                   options={[
                     { value: 'unpaid', label: 'טרם שולם' },
                     { value: 'paid', label: 'שולם' },
                   ]}
                 />
-                {isPaid && (
-                  <p className="text-[10px] text-slate-gray mt-1.5">
-                    בטל את סימון התשלום כדי לערוך תאריך, סכום או לקוח.
-                  </p>
-                )}
+                <p className={`text-[10px] text-slate-gray mt-1.5 ${isPaid ? 'visible' : 'invisible'}`}>
+                  בטל את סימון התשלום כדי לערוך תאריך, סכום או לקוח.
+                </p>
               </div>
             )}
 
