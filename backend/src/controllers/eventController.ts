@@ -164,3 +164,29 @@ export const markEventPaid = async (req: Request, res: Response, next: NextFunct
     next(error);
   }
 };
+
+export const markEventUnpaid = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const event = await ServiceEvent.findById(req.params.id);
+    if (!event) {
+      return next(new AppError('Service event not found', 404));
+    }
+
+    if (!event.isPaid) {
+      return next(new AppError('Event is not marked as paid', 400));
+    }
+
+    const deleteResult = await Transaction.deleteMany({ relatedEvent: event._id });
+
+    event.isPaid = false;
+    await event.save();
+    const populatedEvent = await event.populate('client', 'name type color');
+
+    res.status(200).json({
+      status: 'success',
+      data: { event: populatedEvent, deletedCount: deleteResult.deletedCount },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
