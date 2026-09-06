@@ -141,8 +141,8 @@ export const QuickEventModal: React.FC<QuickEventModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            <div>
+          <div className="grid grid-cols-5 gap-3 sm:gap-4">
+            <div className="col-span-3 min-w-0">
               <label className="block text-[11px] font-bold text-slate-gray mb-1.5 uppercase">תאריך</label>
               <Input
                 type="date"
@@ -152,7 +152,7 @@ export const QuickEventModal: React.FC<QuickEventModalProps> = ({
                 className="h-10 bg-canvas-cream border-dust-taupe rounded-2xl px-4"
               />
             </div>
-            <div>
+            <div className="col-span-2 min-w-0">
               <label className="block text-[11px] font-bold text-slate-gray mb-1.5 uppercase">שעה</label>
               <Input
                 type="time"

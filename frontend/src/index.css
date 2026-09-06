@@ -152,3 +152,35 @@ input[type="password"] {
     font-size: 16px !important;
   }
 }
+
+/*
+ * iOS draws date and time inputs as a native chip that ignores our height,
+ * border and radius, and grows past its grid column — which smeared the two
+ * fields into one another. Stripping the native appearance makes them lay
+ * out like every other input. direction:ltr keeps the value in reading order
+ * ("6 Sep 2026", not "Sep 2026 6") inside the RTL form.
+ */
+input[type="date"],
+input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  direction: ltr;
+  text-align: right;
+}
+
+@media (max-width: 767px) {
+  input[type="date"],
+  input[type="time"] {
+    /* 16px text needs the room back that the native chip used to take. */
+    line-height: 1.5;
+    padding-inline: 0.75rem;
+  }
+
+  /* Tapping the field already opens the picker on a phone, so the indicator
+     only steals width the value needs. */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    display: none;
+  }
+}

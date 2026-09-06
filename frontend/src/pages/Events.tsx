@@ -728,8 +728,9 @@ export default function Events() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-              <div>
+            {/* A date needs more room than an hour, so the phone row splits 3/2. */}
+            <div className="grid grid-cols-5 sm:grid-cols-3 gap-3 sm:gap-4">
+              <div className="col-span-3 sm:col-span-1 min-w-0">
                 <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">תאריך</label>
                 <Input
                   type="date"
@@ -740,7 +741,7 @@ export default function Events() {
                 />
               </div>
 
-              <div>
+              <div className="col-span-2 sm:col-span-1 min-w-0">
                 <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">שעת התחלה</label>
                 <Input
                   type="time"
@@ -751,7 +752,7 @@ export default function Events() {
                 />
               </div>
 
-              <div className="col-span-2 sm:col-span-1">
+              <div className="col-span-5 sm:col-span-1 min-w-0">
                 <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">סכום / תעריף (₪)</label>
                 <Input
                   type="number"
