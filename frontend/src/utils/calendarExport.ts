@@ -20,6 +20,12 @@ export const getEventTypeHebrew = (t: IServiceEvent["type"]) => {
 const DEFAULT_DURATION_HOURS = 3;
 
 /**
+ * Alerts every exported event carries into Apple Calendar, as RFC 5545
+ * durations relative to the start: a day ahead, then two hours ahead.
+ */
+const REMINDER_TRIGGERS = ["-P1D", "-PT2H"];
+
+/**
  * Title, description and the exact start/end instants of an event.
  * The stored date carries the hour the user picked, so both calendars
  * receive the real start time instead of a midnight placeholder.
@@ -73,6 +79,13 @@ export const downloadAppleIcsFile = (evt: IServiceEvent) => {
     `DTSTART:${formatUtcStamp(start)}`,
     `DTEND:${formatUtcStamp(end)}`,
     `STATUS:${evt.status === "Completed" ? "CONFIRMED" : "TENTATIVE"}`,
+    ...REMINDER_TRIGGERS.flatMap((trigger) => [
+      "BEGIN:VALARM",
+      "ACTION:DISPLAY",
+      `DESCRIPTION:${escapeIcsText(title)}`,
+      `TRIGGER;RELATED=START:${trigger}`,
+      "END:VALARM",
+    ]),
     "END:VEVENT",
     "END:VCALENDAR",
   ].join("\r\n");
