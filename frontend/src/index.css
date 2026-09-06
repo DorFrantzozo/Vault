@@ -139,3 +139,16 @@ input[type="email"],
 input[type="password"] {
   color-scheme: light;
 }
+
+/*
+ * iOS Safari zooms the viewport in whenever a focused form control renders
+ * below 16px, and it never zooms back out — which pushed dialogs off screen
+ * after tapping a field. Keep every control at 16px on phone widths.
+ */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}

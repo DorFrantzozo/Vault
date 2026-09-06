@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Plus, Trash2, CalendarOff, Pencil, CalendarPlus, Search, X, List, CalendarDays, Clock } from 'lucide-react';
-import { startOfMonth, endOfMonth, isWithinInterval, parseISO, addMonths } from 'date-fns';
+import { startOfMonth, endOfMonth, isWithinInterval, parseISO, addMonths, format } from 'date-fns';
 import {
   useGetEventsQuery,
   useCreateEventMutation,
@@ -67,6 +67,12 @@ const getStatusHebrew = (s: IServiceEvent['status']) => {
   }
 };
 
+/** Fallback start time for events created without an explicit hour. */
+const DEFAULT_EVENT_TIME = '12:00';
+
+/** Today in the browser's own timezone — toISOString() would roll over a day early. */
+const todayLocal = () => format(new Date(), 'yyyy-MM-dd');
+
 export default function Events() {
   const { confirm } = useModal();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -76,7 +82,8 @@ export default function Events() {
 
   const [clientId, setClientId] = useState('');
   const [type, setType] = useState<IServiceEvent['type']>('DJ Gig');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(todayLocal());
+  const [time, setTime] = useState(DEFAULT_EVENT_TIME);
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<IServiceEvent['status']>('Scheduled');
   const [amount, setAmount] = useState<string>('');
@@ -207,20 +214,26 @@ export default function Events() {
     setEditingEventId(ev._id);
     setClientId(ev.client && typeof ev.client === 'object' ? ev.client._id : ev.client || '');
     setType(ev.type);
-    setDate(new Date(ev.date).toISOString().split('T')[0]);
+    const evDate = parseISO(ev.date);
+    setDate(format(evDate, 'yyyy-MM-dd'));
+    setTime(format(evDate, 'HH:mm'));
     setDescription(ev.description || '');
     setStatus(ev.status);
     setAmount(ev.amount ? ev.amount.toString() : '0');
     setIsPaid(ev.isPaid);
     setOriginalIsPaid(ev.isPaid);
     setOriginalAmount(ev.amount ? ev.amount.toString() : '0');
-    setOriginalDate(new Date(ev.date).toISOString().split('T')[0]);
+    setOriginalDate(ev.date);
     setIsModalOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!clientId || !date) return;
+
+    // The date input carries no timezone, so build the instant in local time —
+    // that is what Apple / Google Calendar will show after the export converts it.
+    const eventDateIso = new Date(`${date}T${time || DEFAULT_EVENT_TIME}:00`).toISOString();
 
     try {
       if (editingEventId) {
@@ -229,7 +242,7 @@ export default function Events() {
         if (paidChanged && !isPaid) {
           const isConfirmed = await confirm({
             title: 'ביטול סימון תשלום',
-            message: `פעולה זו תמחק את תנועת ההכנסה בסך ₪${(Number(originalAmount) || 0).toLocaleString()} מתאריך ${new Date(originalDate).toLocaleDateString('he-IL')} מספר התנועות, ותסמן את האירוע כטרם שולם. לא ניתן לשחזר את התנועה לאחר המחיקה.`,
+            message: `פעולה זו תמחק את תנועת ההכנסה בסך ₪${(Number(originalAmount) || 0).toLocaleString()} מתאריך ${parseISO(originalDate).toLocaleDateString('he-IL')} מספר התנועות, ותסמן את האירוע כטרם שולם. לא ניתן לשחזר את התנועה לאחר המחיקה.`,
             confirmText: 'בטל תשלום ומחק תנועה',
             type: 'danger',
           });
@@ -245,7 +258,7 @@ export default function Events() {
           id: editingEventId,
           client: clientId,
           type,
-          date: new Date(date).toISOString(),
+          date: eventDateIso,
           description: description || undefined,
           status,
           amount: Number(amount) || 0,
@@ -265,7 +278,7 @@ export default function Events() {
         const res = await createEvent({
           client: clientId,
           type,
-          date: new Date(date).toISOString(),
+          date: eventDateIso,
           description: description || undefined,
           status,
           amount: Number(amount) || 0,
@@ -316,7 +329,8 @@ export default function Events() {
     setModalError(null);
     setClientId('');
     setType('DJ Gig');
-    setDate(new Date().toISOString().split('T')[0]);
+    setDate(todayLocal());
+    setTime(DEFAULT_EVENT_TIME);
     setDescription('');
     setStatus('Scheduled');
     setAmount('');
@@ -496,7 +510,10 @@ export default function Events() {
                     {ev.client && typeof ev.client === 'object' ? ev.client.name : 'ללא לקוח'}
                   </TableCell>
                   <TableCell className="font-bold text-ink-black">
-                    {new Date(ev.date).toLocaleDateString('he-IL')}
+                    <div>{parseISO(ev.date).toLocaleDateString('he-IL')}</div>
+                    <div className="text-[11px] font-medium text-slate-gray">
+                      {format(parseISO(ev.date), 'HH:mm')}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Badge variant={
@@ -591,7 +608,9 @@ export default function Events() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-xs text-slate-gray">
                     <Clock className="w-3.5 h-3.5" />
-                    <span>{new Date(ev.date).toLocaleDateString('he-IL')}</span>
+                    <span>
+                      {parseISO(ev.date).toLocaleDateString('he-IL')} · {format(parseISO(ev.date), 'HH:mm')}
+                    </span>
                   </div>
                   <span className="text-ink-black font-bold font-heading">
                     {ev.amount ? `₪${ev.amount.toLocaleString()}` : '-'}
@@ -709,7 +728,7 @@ export default function Events() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
               <div>
                 <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">תאריך</label>
                 <Input
@@ -722,9 +741,21 @@ export default function Events() {
               </div>
 
               <div>
+                <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">שעת התחלה</label>
+                <Input
+                  type="time"
+                  required
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  disabled={isPaid}
+                />
+              </div>
+
+              <div className="col-span-2 sm:col-span-1">
                 <label className="block text-[11px] font-bold text-slate-gray mb-1 uppercase tracking-wider font-heading">סכום / תעריף (₪)</label>
                 <Input
                   type="number"
+                  inputMode="decimal"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="1500"

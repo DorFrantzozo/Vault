@@ -111,7 +111,7 @@ export const QuickEventModal: React.FC<QuickEventModalProps> = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-[11px] font-bold text-slate-gray mb-1.5 uppercase">סוג אירוע</label>
               <select
@@ -141,7 +141,7 @@ export const QuickEventModal: React.FC<QuickEventModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="block text-[11px] font-bold text-slate-gray mb-1.5 uppercase">תאריך</label>
               <Input
